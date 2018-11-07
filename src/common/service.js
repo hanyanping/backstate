@@ -3,7 +3,7 @@ import Vue from 'vue'
 import axios from 'axios'
 import Global from './global'
 import Util from './util'
-// import Store from '../vuex/index'
+import Store from '../vuex/index'
 axios.interceptors.request.use(config => {
     Store.commit("setIsLoading", true);
     return config

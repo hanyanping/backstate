@@ -78,3 +78,6 @@ input:disabled, textarea:disabled {
 .mint-loadmore-bottom{
     margin-bottom: -30px!important;
 }
+.none{
+    display: none;
+}
