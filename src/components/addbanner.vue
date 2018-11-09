@@ -1,25 +1,62 @@
 <style rel="stylesheet/scss" lang="scss"  scoped>
-
-    .content{
-        display: flex;
-        .contanter{
-            flex:1;
+    .addbanner{
+        position: fixed;
+        top:0;
+        height: 100vh;
+        width: calc(100% - 236px);
+        left: 236px;
+        /*background: rgba(0,0,0,0.2);*/
+        .dialogcontent{
+            position: relative;
+            height: 450px;
+            background: #fff;
+            width: 1000px;
+            overflow: hidden;
+            overflow-y: scroll;
+            .bannercontent{
+                position: absolute;
+                width:100%;
+                padding: 20px 30px;
+                .addtitle{
+                  color: #929292;
+                    font-size: 16px;
+                    .addimg{
+                        color: #0abf9b;
+                    }
+                }
+            }
             .imgContent{
                 display: flex;
                 flex-wrap: wrap;
+                .upload-demo{
+                    border: 1px  solid #dcdcdc;
+                    line-height: 124px;
+                    .el-button{
+                        color: #929292;
+                        font-size: 14px;
+                        border: none;
+                        background: #fff;
+                        .uploadIcon{
+                            height: 20px;
+                            width: 20px;
+                            display: inline-block;
+                            vertical-align: middle;
+                        }
+                    }
+                }
                 .imgBox{
                     width: 25%;
                     margin: 20px 20px 0 0;
                     .back{
-                        height: 230px;
+                        height: 124px;
                         width: 100%;
                         background-size: cover;
                         position: relative;
                     }
                     .selectActive{
-                        background: rgba(0,0,0,0.3);
+                        background: rgba(255,255,255,0.1);
                         position: absolute;
-                        height: 230px;
+                        height: 124px;
                         width: 100%;
                         text-align: center;
                         line-height: 230px;
@@ -31,13 +68,13 @@
                     .disabledActive{
                         background: rgba(255,255,255,0.5);
                         position: absolute;
-                        height: 230px;
+                        height: 124px;
                         width: 100%;
                     }
                     .deletBox{
                         background: rgba(0,0,0,0.3);
                         position: absolute;
-                        height: 230px;
+                        height: 124px;
                         width: 100%;
                         text-align: right;
                         .deleticon{
@@ -53,6 +90,10 @@
             .button{
                 text-align: center;
                 margin-top: 50px;
+                height: 60px;
+                position: fixed;
+                bottom: 70px;
+                width: 100%;
                 .surebutton{
                     color: #fff;
                     background: #0abf9b;
@@ -72,23 +113,24 @@
 </style>
 <template>
     <div class="addbanner">
-        <div class="content">
-            <Aside></Aside>
-            <div class="contanter">
-                <el-upload
-                        class="upload-demo"
-                        name="upfile"
-                        action="/sys/ueditor/index?action=uploadimage"
-                        :on-change="handleChange"
-                        :on-success="handleAvatarSuccess"
-                        :before-upload="beforeAvatarUpload"
-                        :on-error="errphoto"
-                        :show-file-list="false"
-                        accept=".jpg,.jpeg,.png,.gif,.bmp,.JPG,.JPEG,.GIF,.BMP"
-                        >
-                    <el-button size="small" type="primary">上传文件</el-button>
-                </el-upload>
+        <div class="dialogcontent">
+            <div class="bannercontent">
+                <h3 class="addtitle"><span class="addimg">添加图片</span>（只能添加jpg，bmp，png，gif，文件大小不超过500kb）</h3>
                 <div class="imgContent">
+                    <el-upload
+                            class="upload-demo imgBox"
+                            name="upfile"
+                            action="/sys/ueditor/index?action=uploadimage"
+                            :on-change="handleChange"
+                            :on-success="handleAvatarSuccess"
+                            :before-upload="beforeAvatarUpload"
+                            :on-error="errphoto"
+                            :show-file-list="false"
+                            accept=".jpg,.jpeg,.png,.gif,.bmp,.JPG,.JPEG,.GIF,.BMP"
+                    >
+
+                        <el-button size="small" type="primary"><img class='uploadIcon' src="../assets/images/down.png">上传文件</el-button>
+                    </el-upload>
                     <div class="imgBox cursor" v-for="(item,index) in photos">
                         <div @click="select(item)" class="back" @mouseenter="enterStyle(item)" @mouseleave="outStyle(item)" :style="{backgroundImage: 'url(' + item.url + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}">
                             <div :class={selectActive:item.select}>
@@ -97,22 +139,14 @@
                             <div :class={disabledActive:item.disabled}>
                             </div>
                             <div  :class={deletBox:item.isdelete}>
-                                <img  v-if="item.isdelete"  @click="deleteimg(item.id,$event)" class='deleticon' src="../assets/images/back.png">
+                                <img  v-if="item.isdelete"  @click="deleteimg(item.url,$event)" class='deleticon' src="../assets/images/back.png">
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="block">
-                    <el-pagination  @current-change="handleCurrentChange"
-                                    :current-page="currentPageNo"
-                                    :page-size = "pageSize"
-                                    layout="prev,pager,next"
-                                    :total="totalCount">
-                    </el-pagination>
-                </div>
                 <div class="button">
-                    <span class="surebutton">确定</span>
-                    <span class="canclebutton">取消</span>
+                    <span class="surebutton cursor" @click="sureImg">确定</span>
+                    <span class="canclebutton cursor" @click="cancleImg">取消</span>
                 </div>
             </div>
         </div>
@@ -121,29 +155,36 @@
 
 <script>
     import axios from 'axios'
-    import Aside from '../components/aside'
+    import Aside from './aside'
     import Util from '../common/util'
     import Service from '../common/service'
     export default {
-        name: "home",
+        name: "addbanner",
         data() {
             return {
                 dialogImageUrl: '',
                 dialogVisible: false,
                 selectImg: [],
-                pageSize: 2,
-                pages: '',
-                currentPageNo: 1,
-                currentCount: "2",
-                totalCount: 0,
                 imgUrl: '',
                 file:'',
                 photos:[],
-                photo:[{'isdelete':false,'disabled':false,select:false,'url':'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bac2.png',id:'1'},{'isdelete':false,'disabled':false,'select':false,'url':'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/guanyuwomen_banner.jpg',id:'2'},{'isdelete':false,'disabled':false,'select':false,'url':'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xinwen_banner.jpg',id:'3'}]
+                photos:[{'isdelete':false,'disabled':false,select:false,'url':'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bac2.png',id:'1'},{'isdelete':false,'disabled':false,'select':false,'url':'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/guanyuwomen_banner.jpg',id:'2'},{'isdelete':false,'disabled':false,'select':false,'url':'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xinwen_banner.jpg',id:'3'}]
             };
         },
         created(){
             // this.getphotoList()
+        },
+        mounted(){
+            var width = $(".addbanner").width();
+            console.log(width)
+            var left = 0.5*(width - 1000);
+            console.log(left)
+
+            var height = document.body.offsetHeight,
+                scrollTop = document.body.scrollTop,
+                top = 0.5*(height-scrollTop-450);
+            console.log(height,scrollTop)
+            $('.dialogcontent').css({"left":left,'top': top})
         },
         methods: {
             errphoto(err, file, fileList){
@@ -157,50 +198,43 @@
                 return isLt2M;
             },
             handleAvatarSuccess(res, file) {
-                this.photos.push(res)
-                for(var i = 0;i< this.photos.length;i++){
-                    this.photos[i].isdelete = false;
-                    this.photos[i].disabled = false;
-                    this.photos[i].select = false;
-                    this.photos[i].id = i;
+                var obj = {
+                    'isdelete':false,
+                    'disabled':false,
+                    'select':false,
                 }
-                console.log(this.photos)
-                console.log(this.photo)
+                obj.url = res.url;
+                this.photos.push(obj)
             },
             handleChange(file, fileList) {
-                if(fileList){
-                    // for(var i = 0;i< fileList.length;i++){
-                    //     console.log(fileList[i].response.url)
-                    //     if(fileList[i].status == "success"){
-                    //         this.photos.imgurl = fileList[i].response.url;
-                    //         this.photos.isdelete = false;
-                    //         this.photos.disabled = false;
-                    //         this.photos.select = false;
-                    //         this.photos.id = i;
-                    //     }
-                    // }
-                    // this.$nextTick(()=>{
-                    //     this.photos = fileList
-                    // })
-                }
-
             },
             enterStyle(item){
                 item.isdelete = true;
-
             },
             outStyle(item){
                 item.isdelete = false;
             },
-            deleteimg(id,event){//删除图片
+            deleteimg(url,event){//删除图片
                 event.stopPropagation();
-                console.log(id)
+                console.log(url)
+                for(var i = 0;i < this.selectImg.length; i++){
+                    if(this.selectImg[i] == url){
+                        this.selectImg.splice(i, 1)
+                    }
+                }
+                console.log(this.selectImg)
+                for(var i = 0;i < this.photos.length; i++){
+                    if(this.photos[i].url == url){
+                        this.photos.splice(i, 1)
+                    }
+                }
+                console.log(this.photos)
             },
             select(item){//选择图片
                 if(this.selectImg.length>=2){
-                    if(this.selectImg.indexOf(item.id)>-1){
+                    if(this.selectImg.indexOf(item.url)>-1){
                         item.select = !item.select;
-                        var index = this.selectImg.indexOf(item.id);
+                        var index = this.selectImg.indexOf(item.url);
                         this.selectImg.splice(index, 1);
                         for(var j = 0;j < this.photos.length;j++ ){
                             this.photos[j].disabled = false;
@@ -209,7 +243,7 @@
                         for(var j = 0;j < this.photos.length;j++ ){
                             var num = 0;
                             for(var i = 0;i < this.selectImg.length; i++){
-                                if(this.selectImg[i] != this.photos[j].id){
+                                if(this.selectImg[i] != this.photos[j].url){
                                     num++;
                                     if(num == this.selectImg.length){
                                         this.photos[j].disabled = true;
@@ -219,54 +253,24 @@
                         }
                     }
                 }else{
-                    console.log(item)
+                    console.log(typeof (item.select))
                     item.select = !item.select;
                     if(item.select){
-                        this.selectImg.push(item.id)
+                        this.selectImg.push(item.url)
+                        console.log(this.selectImg)
                     }else{
-                        var index = this.selectImg.indexOf(item.id)
+                        var index = this.selectImg.indexOf(item.url)
                         this.selectImg.splice(index, 1);
                     }
                     console.log(this.selectImg)
                 }
             },
-            handleCurrentChange(currentPage) {//跳转
-                //当前页改变调用接口  pageNo  pageSize
-                this.currentPageNo = currentPage;
-                this.getphotoList()
+            sureImg(){
+                console.log(this.selectImg)
             },
-            getphotoList(){
-                console.log(this.currentPageNo)
-                this.photos = this.photo;
-                this.totalCount = 3;
+            cancleImg(){
+
             },
-            handleSizeChange(val) {
-                console.log(`每页 ${val} 条`);
-            },
-
-            getFile(event) {
-                this.file = event.target.files[0];
-                console.log(this.file);
-                event.preventDefault();
-                let formData = new FormData();
-                formData.append('file', this.file);
-                formData.append('method', "post");
-                let config = {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                }
-                Service.common().postphone({
-                }).then(response => {
-                    console.log(response)
-                }, err => {
-
-                })
-            }
-
-        },
-        components:{
-            Aside,
         },
     }
 </script>

@@ -81,3 +81,29 @@ input:disabled, textarea:disabled {
 .none{
     display: none;
 }
+table{
+    border: none;
+    border-collapse: collapse;
+}
+.sureButton{
+    color: #fff;
+    background: #0abf9b;
+    display: inline-block;
+    height: 50px;
+    line-height: 50px;
+    width: 178px;
+    text-align: center;
+    font-size: 14px;
+    margin-right: 15px;
+}
+.cancleButton{
+    display: inline-block;
+    width: 178px;
+    height: 50px;
+    line-height: 50px;
+    border: solid 1px #dcdcdc;
+    color: #0d0d0d;
+    font-size: 14px;
+    text-align: center;
+    margin-left: 15px;
+}

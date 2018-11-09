@@ -1,71 +1,73 @@
 <style rel="stylesheet/scss" lang="scss"  scoped>
 
     #aside{
-        width: 300px;
         display: flex;
-        height: 100vh;
         .firstAside{
-            width: 100px;
+            width: 94px;
             background: #fff;
             text-align: center;
-            img{
+            padding-top: 24px;
+            box-shadow: -19px 0px 65px 0px #dddddd;
+            .firstLi{
                 height: 50px;
-                width: 50px;
-                margin-top: 10px;
+                line-height: 50px;
+            }
+            img{
+                height: 25px;
+                width: 25px;
+                display: inline-block;
+                vertical-align: middle;
             }
             .active{
-                background: #f4f4f4;
+                background: #f9f9f9;
                 border-left: 5px solid #0abf9b;
             }
         }
         .secondAside{
-            width: 200px;
-            background: #f4f4f4;
+            width: 142px;
             text-align: center;
+            padding-top: 30px;
             .title{
-                font-size: 20px;
+                font-size: 16px;
                 color: #0abf9b;
                 font-weight: 600;
                 padding: 10px 0;
             }
             li{
                 padding: 10px 0;
-                font-size: 15px;
-                color:#bbb;
+                font-size: 12px;
+                color: #929292;
             }
             li:hover{
                 padding: 10px 0;
-                font-size: 15px;
-                color:#232323;
+                font-size: 12px;
+                color:#0d0d0d;
             }
             .subactive{
-                color: #232323;
-                font-size: 15px;
+                color: #0d0d0d;
+                font-size: 12px;
             }
             .subactive:hover{
-                color: #232323;
-                font-size: 15px;
+                color: #0d0d0d;
+                font-size: 12px;
             }
         }
     }
 </style>
 <template>
-    <div class="content">
-        <div id="aside">
-            <ul class="firstAside">
-                <li  class='cursor' :class="{active:item.isSubShow}" v-for="(item,index) in items">
-                    <img :src='item.imgurl' @click="showToggle(item,index)">
-                </li>
-            </ul>
-            <ul class="secondAside">
-                <div class="title">{{title}}</div>
-                <li class='cursor' :class="{subactive:subItem.isSubShow}" @click="jumpRouter(subItem,index)" v-for="(subItem,index) in secondContent">
-                    <h3>{{subItem.name}}</h3>
-                </li>
-            </ul>
-        </div>
+    <div id="aside">
+        <ul class="firstAside">
+            <li  class='cursor firstLi' :class="{active:item.isSubShow}" v-for="(item,index) in items">
+                <img :src='item.imgurl' @click="showToggle(item,index)">
+            </li>
+        </ul>
+        <ul class="secondAside">
+            <div class="title">{{title}}</div>
+            <li class='cursor' :class="{subactive:subItem.isSubShow}" @click="jumpRouter(subItem,index)" v-for="(subItem,index) in secondContent">
+                <h3>{{subItem.name}}</h3>
+            </li>
+        </ul>
     </div>
-
 </template>
 
 <script>
@@ -84,13 +86,13 @@
                         title: '内容管理',
                         name: '公司动态',
                         isSubShow: false,
-                        router:'addbanner'
+                        router:'backnews'
                     },
                     {
                         title: '内容管理',
                         name: '合作伙伴',
                         isSubShow: false,
-                        router:'addbanner'
+                        router:'cooperative'
                     }
                 ],
                 items: [
@@ -109,13 +111,13 @@
                                 title: '内容管理',
                                 name: '公司动态',
                                 isSubShow: false,
-                                router:'addbanner'
+                                router:'backnews'
                             },
                             {
                                 title: '内容管理',
                                 name: '合作伙伴',
                                 isSubShow: false,
-                                router:'addbanner'
+                                router:'cooperative'
                             }
                         ]
                     },
@@ -128,37 +130,49 @@
                                 title: '咨询管理',
                                 name: '健康资讯',
                                 isSubShow: true,
-                                router:'addbanner'
+                                router:'healthinquiry'
                             },
                             {
                                 title: '咨询管理',
                                 name: '健康新闻',
                                 isSubShow: false,
-                                router:'home'
+                                router:'healthnews'
                             },
                             {
                                 title: '咨询管理',
                                 name: '健康之声',
                                 isSubShow: false,
-                                router:'addbanner'
+                                router:'healthvoice'
+                            }
+                        ]
+                    },
+                    {
+                        name: '设置',
+                        imgurl:require('../assets/images/guanli.png'),
+                        isSubShow: false,
+                        subItems: [
+                            {
+                                title: '设置中心',
+                                name: '员工管理',
+                                isSubShow: true,
+                                router:'management'
                             }
                         ]
                     }
+
                 ]
             }
         },
         created() {
            console.log(this.$route.params.index)
             if(this.$route.params.from == 'parent'){
-
                 for(let i in this.items){
-
                     if(this.$route.params.index != i){
                         this.items[i].isSubShow = false;
                     }else{
                         this.items[i].isSubShow = true;
                         this.secondContent =  this.items[i].subItems;
-                        this.title =  this.secondContent[i].title
+                        this.title =  this.items[i].subItems[0].title;
                     }
                 }
             }else if(this.$route.params.from == 'child'){
@@ -180,4 +194,3 @@
             }
         }
     }</script>
-
