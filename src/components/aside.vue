@@ -11,18 +11,45 @@
             .firstLi{
                 height: 50px;
                 line-height: 50px;
+                position: relative;
+                .warmText{
+                    position: absolute;
+                    background: #000;
+                    color: #ffff;
+                    display: inline-block;
+                    height: 30px;
+                    width: 40px;
+                    font-size: 12px;
+                    line-height: 30px;
+                    text-align: center;
+                    top: 12px;
+                    right: -13px;
+                }
+                img{
+                    height: 22px;
+                    width: 22px;
+                    display: inline-block;
+                    vertical-align: middle;
+                }
+                .active{
+                    background: #0abf9b;
+                    display: inline-block;
+                    height: 50px;
+                    width: 5px;
+                    position: absolute;
+                    left: 0;
+                    /*box-sizing: content-box;*/
+                }
             }
-            img{
-                height: 25px;
-                width: 25px;
-                display: inline-block;
-                vertical-align: middle;
-            }
-            .active{
+            .liactive{
                 background: #f9f9f9;
-                border-left: 5px solid #0abf9b;
             }
+            .firstLi:hover{
+                color: #0abf9b;
+            }
+
         }
+
         .secondAside{
             width: 142px;
             text-align: center;
@@ -57,8 +84,12 @@
 <template>
     <div id="aside">
         <ul class="firstAside">
-            <li  class='cursor firstLi' :class="{active:item.isSubShow}" v-for="(item,index) in items">
-                <img :src='item.imgurl' @click="showToggle(item,index)">
+            <li  class='cursor firstLi' @mouseenter="enterStyle(item)" @mouseleave='leaveStyle(item)' :class="{liactive:item.isSubShow}" v-for="(item,index) in items">
+                <span :class="{active:item.isSubShow}"></span>
+                <img :src='item.greyIcon' v-if="!item.showIcon" @click="showToggle(item,index)">
+                <img :src='item.greenIcon' v-if="item.showIcon" @click="showToggle(item,index)">
+                <span v-if="item.isShow" class="warmText">{{item.name}}</span>
+                <!--<span  class="warmText">{{item.name}}</span>-->
             </li>
         </ul>
         <ul class="secondAside">
@@ -98,8 +129,11 @@
                 items: [
                     {
                         name: '官网',
-                        imgurl:require('../assets/images/gonglue.png'),
+                        greyIcon: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/barguanwangone.png',
+                        greenIcon: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/barguanwangon.png',
                         isSubShow: true,
+                        showIcon: true,
+                        isShow: false,
                         subItems: [
                             {
                                 title: '内容管理',
@@ -124,7 +158,11 @@
                     {
                         name: '文章',
                         imgurl:require('../assets/images/guanli.png'),
+                        greyIcon: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/wenzhanggrey.png',
+                        greenIcon: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/wenzhang.png',
                         isSubShow: false,
+                        showIcon: false,
+                        isShow: false,
                         subItems: [
                             {
                                 title: '咨询管理',
@@ -149,48 +187,95 @@
                     {
                         name: '设置',
                         imgurl:require('../assets/images/guanli.png'),
+                        greyIcon: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shezhigray.png',
+                        greenIcon: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shezhi.png',
                         isSubShow: false,
+                        showIcon: false,
+                        isShow: false,
                         subItems: [
                             {
                                 title: '设置中心',
                                 name: '员工管理',
                                 isSubShow: true,
-                                router:'management'
+                                router:'stafmanage'
+                            },
+                            {
+                                title: '设置中心',
+                                name: '角色管理',
+                                isSubShow: false,
+                                router:'rolemanage'
                             }
                         ]
                     }
-
                 ]
             }
         },
         created() {
-           console.log(this.$route.params.index)
-            if(this.$route.params.from == 'parent'){
-                for(let i in this.items){
-                    if(this.$route.params.index != i){
-                        this.items[i].isSubShow = false;
-                    }else{
-                        this.items[i].isSubShow = true;
-                        this.secondContent =  this.items[i].subItems;
-                        this.title =  this.items[i].subItems[0].title;
-                    }
-                }
-            }else if(this.$route.params.from == 'child'){
-                for(let i in this.secondContent){
-                    if(this.$route.params.index != i){
-                        this.secondContent[i].isSubShow = false;
-                    }else{
-                        this.secondContent[i].isSubShow = true;
+            var params = JSON.parse(localStorage.getItem('param'));
+            var childparam = JSON.parse(localStorage.getItem('childparam'));
+            console.log(params)
+            console.log(childparam)
+            if(params){
+                if(params.from == 'parent'){
+                    for(let i in this.items){
+                        if(params.index != i){
+                            this.items[i].isSubShow = false;
+                            this.items[i].showIcon = false;
+                        }else{
+                            this.items[i].isSubShow = true;
+                            this.items[i].showIcon = true;
+                            this.secondContent =  this.items[i].subItems;
+                            this.secondContent[0].isSubShow = true;
+                            console.log(i)
+                            console.log( this.items)
+                            this.title =  this.items[i].subItems[0].title;
+                        }
                     }
                 }
             }
+              if(childparam){
+                  if(childparam){
+                      if(childparam.from == 'child'){
+                          for(let i in this.secondContent){
+                              if(childparam.index != i){
+                                  this.secondContent[i].isSubShow = false;
+                              }else{
+                                  this.secondContent[i].isSubShow = true;
+                              }
+                          }
+                      }
+                  }
+              }
         },
         methods: {
-            showToggle (item,index) {
-               this.$router.push({ name: item.subItems[0].router, params: {index: index,from:'parent'}})
+            enterStyle(item){
+                if(!item.showIcon){
+                    item.showIcon = true;
+                }
+                item.isShow = true;
+            },
+            leaveStyle(item){
+                if(!item.isSubShow){
+                    item.showIcon = false;
+                }
+                item.isShow = false;
+            },
+            showToggle (item,index) {//第一个侧边栏
+                var obj = {
+                    index: index,
+                    from: 'parent'
+                }
+                localStorage.setItem('param',JSON.stringify(obj))
+                localStorage.removeItem("childparam");
+               this.$router.push({ name: item.subItems[0].router})
             },
             jumpRouter(item,index){
-                this.$router.push({'name':item.router, params: {index: index,from:'child'}})
+                var obj = {
+                    index: index,
+                    from: 'child'
+                }
+                localStorage.setItem('childparam',JSON.stringify(obj))
+                this.$router.push({'name':item.router})
             }
         }
     }</script>

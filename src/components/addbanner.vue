@@ -13,9 +13,10 @@
             width: 1000px;
             overflow: hidden;
             overflow-y: scroll;
+            box-shadow: 0px 7px 59px 0px #cccccc;
             .bannercontent{
                 position: absolute;
-                width:100%;
+                width:940px;
                 padding: 20px 30px;
                 .addtitle{
                   color: #929292;
@@ -38,9 +39,10 @@
                         background: #fff;
                         .uploadIcon{
                             height: 20px;
-                            width: 20px;
+                            width: 22px;
                             display: inline-block;
                             vertical-align: middle;
+                            margin-right: 6px;
                         }
                     }
                 }
@@ -54,15 +56,15 @@
                         position: relative;
                     }
                     .selectActive{
-                        background: rgba(255,255,255,0.1);
+                        background: rgba(0,0,0,0.7);
                         position: absolute;
                         height: 124px;
                         width: 100%;
                         text-align: center;
-                        line-height: 230px;
+                        line-height: 138px;
                         .selecticon{
-                            height: 30px;
-                            width:30px;
+                            height: 15px;
+                            width:21px;
                         }
                     }
                     .disabledActive{
@@ -97,14 +99,13 @@
                 .surebutton{
                     color: #fff;
                     background: #0abf9b;
-                    padding: 10px 20px;
+                    padding: 10px 30px;
                     margin-right: 10px;
-
                 }
                 .canclebutton{
                     margin-left: 10px;
                     color: #232323;
-                    padding: 10px 20px;
+                    padding: 10px 30px;
                     border: 1px solid #f4f4f4;
                 }
             }
@@ -129,17 +130,17 @@
                             accept=".jpg,.jpeg,.png,.gif,.bmp,.JPG,.JPEG,.GIF,.BMP"
                     >
 
-                        <el-button size="small" type="primary"><img class='uploadIcon' src="../assets/images/down.png">上传文件</el-button>
+                        <el-button size="small" type="primary"><img class='uploadIcon' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangchuan.png">上传文件</el-button>
                     </el-upload>
                     <div class="imgBox cursor" v-for="(item,index) in photos">
                         <div @click="select(item)" class="back" @mouseenter="enterStyle(item)" @mouseleave="outStyle(item)" :style="{backgroundImage: 'url(' + item.url + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}">
                             <div :class={selectActive:item.select}>
-                                <img v-if="item.select" class='selecticon' src="../assets/images/back.png">
+                                <img v-if="item.select" class='selecticon' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/selectimg.png">
                             </div>
                             <div :class={disabledActive:item.disabled}>
                             </div>
                             <div  :class={deletBox:item.isdelete}>
-                                <img  v-if="item.isdelete"  @click="deleteimg(item.url,$event)" class='deleticon' src="../assets/images/back.png">
+                                <img  v-if="item.isdelete"  @click="deleteimg(item.url,$event)" class='deleticon' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shanchu.png">
                             </div>
                         </div>
                     </div>
@@ -231,7 +232,7 @@
                 console.log(this.photos)
             },
             select(item){//选择图片
-                if(this.selectImg.length>=2){
+                if(this.selectImg.length>=2){//超过选择的数量，不可选择
                     if(this.selectImg.indexOf(item.url)>-1){
                         item.select = !item.select;
                         var index = this.selectImg.indexOf(item.url);
@@ -265,7 +266,8 @@
                     console.log(this.selectImg)
                 }
             },
-            sureImg(){
+            sureImg(){//确定选中照片
+                this.$emit('clickbanner', 'addphotos')
                 console.log(this.selectImg)
             },
             cancleImg(){
