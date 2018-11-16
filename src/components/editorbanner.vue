@@ -83,7 +83,7 @@
                 <div class="imgContent">
                     <div class="block">
                         <el-carousel :autoplay='false'  @change='changeBanner' arrow="always" indicator-position="none" trigger="click" height="174px" ref="carousel">
-                            <el-carousel-item  v-for="(item,index) in photos" >
+                            <el-carousel-item  v-for="item in photos" >
                                 <div  class="back"  :style="{backgroundImage: 'url(' + item.url + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}">
                                 </div>
                             </el-carousel-item>

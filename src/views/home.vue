@@ -62,15 +62,6 @@
                             background: #000;
                             padding: 4px;
                         }
-                        .publishText{
-
-                        }
-                        .editorText{
-                            position: absolute;
-                        }
-                        .deleteText{
-                            position: absolute;
-                        }
                         .imgicon{
                             display: inline-block;
                             vertical-align: middle;
@@ -257,8 +248,6 @@
                 this.$nextTick(()=>{
                     this.tableData = data;
                 })
-                console.log(this.tableData)
-
             }
         },
         components:{

@@ -10,6 +10,7 @@ import healthvoice from '@/views/healthvoice'//健康之声
 import stafmanage from '@/views/stafmanage'//健康之声
 import rolemanage from '@/views/rolemanage'//角色管理
 import editornews from '@/views/editornews'//新建动态
+import login from '@/views/login'//新建动态
 Vue.use(Router)
 export default new Router({
     mode: 'history',
@@ -19,6 +20,7 @@ export default new Router({
           name: 'home',
           component: home
         },
+
         {
             path: '/backnews',
             name: 'backnews',
@@ -58,6 +60,11 @@ export default new Router({
              path: '/editornews',
              name: 'editornews',
              component: editornews
-         }
+         },
+        {
+            path: '/login',
+            name: 'login',
+            component: login
+        }
   ]
 })

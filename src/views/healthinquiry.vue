@@ -39,6 +39,8 @@
                             border: 1px solid #dcdfe6;
                             height: 35px;
                             border-radius: 5px;
+                            text-indent: 5px;
+                            color: #606266;
                         }
                         input:hover{
                             border: 1px solid #c0c4cc;
@@ -74,9 +76,9 @@
                             td:nth-of-type(2){
                                 width: 180px;
                                 .back{
-                                    height: 100px;
-                                    min-width: 174px;
-                                    max-width: 174px;
+                                    height: 94px;
+                                    min-width: 170px;
+                                    max-width: 170px;
                                     background-size: cover;
                                     margin: 0 auto;
                                 }
@@ -102,6 +104,22 @@
                             }
                             td:nth-of-type(7){
                                 max-width: 110px;
+                                position: relative;
+                                .imgicon{
+                                    display: inline-block;
+                                    vertical-align: middle;
+                                    height: 20px;
+                                    width: 20px;
+                                    padding-right: 10px;
+                                }
+                                .warmtext{
+                                    position: absolute;
+                                    color: #fff;
+                                    font-size: 12px;
+                                    top: 15px;
+                                    background: #000;
+                                    padding: 4px;
+                                }
                             }
                             .upimg{
                                 display: inline-block;
@@ -139,8 +157,8 @@
                     <el-tabs :tab-position="tabPosition">
                         <el-tab-pane label="已发布文章">
                             <div class="searchbox">
-                                <div class="inputBox">文章编号 : <input type="text" /></div>
-                                <div class="inputBox">文章标题 : <input type="text" /></div>
+                                <div class="inputBox">文章编号 : <input type="text" placeholder="请输入文章编号"/></div>
+                                <div class="inputBox">文章标题 : <input type="text" placeholder="请输入文章标题"/></div>
                                 <div class="inputBox">发布时间 :
                                     <el-date-picker
                                             v-model="selectTime"
@@ -150,7 +168,7 @@
                                             end-placeholder="结束日期">
                                     </el-date-picker>
                                 </div>
-                                <div class="inputBox">文章分类 : <el-select v-model="fenlei" placeholder="请选择">
+                                <div class="inputBox">文章分类 : <el-select v-model="fenlei" placeholder="请选择文章分类">
                                     <el-option
                                             v-for="item in options"
                                             :key="item.value"
@@ -158,7 +176,7 @@
                                             :value="item.value">
                                     </el-option>
                                 </el-select></div>
-                                <div class="inputBox">文章摘要 : <input type="text" /></div>
+                                <div class="inputBox">文章摘要 : <input type="text" placeholder="请输入文章摘要"/></div>
                                 <div class="searchButton cursor">查询</div>
                             </div>
                             <div class="tableBox">
@@ -182,9 +200,10 @@
                                         <td>{{item.url}}</td>
                                         <td>{{item.state}}</td>
                                         <td>
-                                            <img class="deletimg imgicon cursor" @click="deleteBanner" :src="item.upicon"/>
-                                            <img @click='editorBanner' class='editorimg imgicon cursor' :src="item.downicon"/>
-                                            <img class="publishimg imgicon cursor"  :src="item.upicon"/>
+                                            <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>
+                                            <img @click='editorBanner' @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
+                                            <span class="deleteText warmtext" v-if="item.isDelete" >删除</span>
+                                            <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                                         </td>
                                     </tr>
                                 </table>
@@ -203,8 +222,8 @@
                         </el-tab-pane>
                         <el-tab-pane label="已移除">
                             <div class="searchbox">
-                                <div class="inputBox">文章编号 : <input type="text" /></div>
-                                <div class="inputBox">文章标题 : <input type="text" /></div>
+                                <div class="inputBox">文章编号 : <input type="text" placeholder="请输入文章编号"/></div>
+                                <div class="inputBox">文章标题 : <input type="text" placeholder="请输入文章标题"/></div>
                                 <div class="inputBox">发布时间 :
                                     <el-date-picker
                                             v-model="selectTime"
@@ -214,7 +233,7 @@
                                             end-placeholder="结束日期">
                                     </el-date-picker>
                                 </div>
-                                <div class="inputBox">文章分类 : <el-select v-model="fenlei" placeholder="请选择">
+                                <div class="inputBox">文章分类 : <el-select v-model="fenlei" placeholder="请选择文章分类">
                                     <el-option
                                             v-for="item in options"
                                             :key="item.value"
@@ -222,7 +241,7 @@
                                             :value="item.value">
                                     </el-option>
                                 </el-select></div>
-                                <div class="inputBox">文章摘要 : <input type="text" /></div>
+                                <div class="inputBox">文章摘要 : <input type="text" placeholder="请输入文章摘要"/></div>
                                 <div class="searchButton cursor">查询</div>
                             </div>
                             <div class="tableBox">
@@ -246,9 +265,10 @@
                                         <td>{{item.url}}</td>
                                         <td>{{item.state}}</td>
                                         <td>
-                                            <img class="deletimg imgicon cursor" @click="deleteBanner" :src="item.upicon"/>
-                                            <img @click='editorBanner' class='editorimg imgicon cursor' :src="item.downicon"/>
-                                            <img class="publishimg imgicon cursor"  :src="item.upicon"/>
+                                            <span class=" warmtext" v-if="item.ispublish">发布</span>
+                                            <img class="publishimg imgicon cursor" @mouseenter="enterStyleone(item)" @mouseleave='leaveStyleone(item)' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/jinlingyingcaiwangtubiao97.png">
+                                            <span class="deleteText warmtext" v-if="item.isDelete" >删除</span>
+                                            <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                                         </td>
                                     </tr>
                                 </table>
@@ -333,6 +353,31 @@
             }
         },
         methods:{
+            enterStyleone(item){
+                item.ispublish = true;
+                this.$forceUpdate()
+            },
+            leaveStyleone(item){
+                item.ispublish = false;
+                this.$forceUpdate()
+            },
+            enterStyletwo(item){
+                item.isEditor = true;
+                this.$forceUpdate();
+            },
+            leaveStyletwo(item){
+                item.isEditor = false;
+                this.$forceUpdate();
+
+            },
+            enterStylethree(item){
+                item.isDelete = true;
+                this.$forceUpdate()
+            },
+            leaveStylethree(item){
+                item.isDelete = false;
+                this.$forceUpdate()
+            },
             handleSizeChange(val) {
                 console.log(`每页 ${val} 条`);
             },

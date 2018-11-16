@@ -1,7 +1,7 @@
 <style rel="stylesheet/scss" lang="scss"  scoped>
     .newscontent{
         display: flex;
-        height:calc(100vh - 70px);
+        min-height:calc(100vh - 70px);
         .contanter{
             background: #f9f9f9;
             flex:1;
@@ -37,6 +37,7 @@
                         td{
                             padding: 26px 20px 0;
                             text-align: center;
+
                         }
                         td:first-child{
                             .back{
@@ -54,6 +55,7 @@
                             min-width: 180px;
                         }
                         td:nth-of-type(4){
+                            position: relative;
                             min-width: 120px;
                             .imgicon{
                                 display: inline-block;
@@ -61,6 +63,14 @@
                                 height: 20px;
                                 width: 20px;
                                 padding-right: 10px;
+                            }
+                            .warmtext{
+                                position: absolute;
+                                color: #fff;
+                                font-size: 12px;
+                                top: 74px;
+                                background: #000;
+                                padding: 4px;
                             }
                         }
                         .upimg{
@@ -110,9 +120,10 @@
                                 <td>{{item.url}}</td>
                                 <td>{{item.state}}</td>
                                 <td>
-                                    <img class="deletimg imgicon cursor" @click="deleteBanner" :src="item.upicon"/>
-                                    <img @click='editorBanner' class='editorimg imgicon cursor' :src="item.downicon"/>
-                                    <img class="publishimg imgicon cursor"  :src="item.upicon"/>
+                                    <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>
+                                    <img @click='editorBanner' @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
+                                    <span class="deleteText warmtext" v-if="item.isDelete" >删除</span>
+                                    <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                                 </td>
 
                             </tr>
@@ -155,26 +166,30 @@
                 showDeletebanner: false,
                 showAddbanner: false,
                 showEditornews: false,
-                tableData: [{
-                    bannerurl: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/banben2.jpg',
-                    url: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/banben2.jpg',
-                    state: '2018年10月20日15点30分'
-                },
-                    {
-                        bannerurl: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/banben2.jpg',
-                        url: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/banben2.jpg',
-                        state: '已发布'
-                    },
-                    {
-                        bannerurl: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/banben2.jpg',
-                        url: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/banben2.jpg',
-                        state: '2018年10月20日15点30分'
-                    }]
+                tableData: []
             };
         },
         created(){
+            this.getBanner();
         },
         methods:{
+            enterStyletwo(item){
+                item.isEditor = true;
+                this.$forceUpdate();
+            },
+            leaveStyletwo(item){
+                item.isEditor = false;
+                this.$forceUpdate();
+
+            },
+            enterStylethree(item){
+                item.isDelete = true;
+                this.$forceUpdate()
+            },
+            leaveStylethree(item){
+                item.isDelete = false;
+                this.$forceUpdate()
+            },
             handleSizeChange(val) {
                 console.log(`每页 ${val} 条`);
             },
@@ -201,6 +216,32 @@
                 if(str == 'deletephotos'){
                     this.showDeletebanner = false;
                 }
+                var data = [{
+                    bannerurl: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/banben2.jpg',
+                    url: '',
+                    state: '2018年10月20日15点30分'
+                },
+                    {
+                        bannerurl: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/banben2.jpg',
+                        url: '',
+                        state: '已发布'
+                    },
+                    {
+                        bannerurl: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/banben2.jpg',
+                        url: '',
+                        state: '2018年10月20日15点30分'
+                    }];
+
+                for(let i in data){
+                    data[i].ispublish = false;
+                    data[i].isEditor = false;
+                    data[i].isDelete = false;
+                    data[i].upicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangyi.png';
+                    data[i].downicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xiayi.png';
+                }
+                this.$nextTick(()=>{
+                    this.tableData = data;
+                })
             }
         },
         components:{

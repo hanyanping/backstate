@@ -43,21 +43,40 @@
                         }
 
                         td:nth-of-type(2){
-                            min-width: 120px;
+                            min-width: 80px;
                         }
                         td:nth-of-type(3){
                             min-width: 120px;
                         }
                         td:nth-of-type(4){
-                            min-width: 120px;
+                            min-width: 80px;
                         }
                         td:nth-of-type(5){
-                            min-width: 150px;
-
+                            min-width: 120px;
                         }
                         td:nth-of-type(6){
                             min-width: 150px;
                         }
+                        td:nth-of-type(7){
+                            position: relative;
+                            min-width: 100px;
+                            .imgicon{
+                                display: inline-block;
+                                vertical-align: middle;
+                                height: 20px;
+                                width: 20px;
+                                padding-right: 10px;
+                            }
+                            .warmtext{
+                                position: absolute;
+                                color: #fff;
+                                font-size: 12px;
+                                top: -10px;
+                                background: #000;
+                                padding: 4px;
+                            }
+                        }
+
                     }
                     tr:last-child{
                         border: none;
@@ -89,6 +108,7 @@
                                 <th>添加人</th>
                                 <th>赋予权限</th>
                                 <th>添加时间</th>
+                                <th>操作</th>
                             </tr>
                             <tr v-for="(item,index) in tableData">
                                 <td>
@@ -99,6 +119,12 @@
                                 <td>{{item.addName}}</td>
                                 <td>{{item.authority}}</td>
                                 <td>{{item.state}}</td>
+                                <td>
+                                    <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>
+                                    <img @click='editorBanner' @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
+                                    <span class="deleteText warmtext" v-if="item.isDelete" >删除</span>
+                                    <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
+                                </td>
                             </tr>
 
                         </table>
@@ -140,36 +166,32 @@
                 showDeletebanner: false,
                 showAddstaf: false,
                 showEditornews: false,
-                tableData: [{
-                    phone: '134556666666',
-                    name: '自己安康快乐',
-                    email:'485849595959@qq.com',
-                    addName: '长大就按',
-                    authority:'管理员，运营',
-                    state: '2018年10月20日'
-                },
-                    {
-                        phone: '134556666666',
-                        name: '自己安康快乐',
-                        email:'485849595959@qq.com',
-                        addName: '长大就按',
-                        authority:'管理员，运营',
-                        state: '2018年10月20日'
-                    },
-                    {
-                        phone: '134556666666',
-                        name: '自己安康快乐',
-                        email:'485849595959@qq.com',
-                        addName: '长大就按',
-                        authority:'管理员，运营',
-                        state: '2018年10月20日'
-                    }
+                tableData: [
                     ]
             };
         },
         created(){
+            this.getBanner();
         },
         methods:{
+            enterStyletwo(item){
+                item.isEditor = true;
+                this.$forceUpdate();
+                console.log(item)
+            },
+            leaveStyletwo(item){
+                item.isEditor = false;
+                this.$forceUpdate();
+
+            },
+            enterStylethree(item){
+                item.isDelete = true;
+                this.$forceUpdate()
+            },
+            leaveStylethree(item){
+                item.isDelete = false;
+                this.$forceUpdate()
+            },
             addStaf(){
                 this.showAddstaf = true;
             },
@@ -199,6 +221,41 @@
                 if(str == 'deletephotos'){
                     this.showDeletebanner = false;
                 }
+                var data = [{
+                    phone: '134556666666',
+                    name: '自己安康快乐',
+                    email:'485849595959@qq.com',
+                    addName: '长大就按',
+                    authority:'管理员，运营',
+                    state: '2018年10月20日'
+                },
+                    {
+                        phone: '134556666666',
+                        name: '自己安康快乐',
+                        email:'485849595959@qq.com',
+                        addName: '长大就按',
+                        authority:'管理员，运营',
+                        state: '2018年10月20日'
+                    },
+                    {
+                        phone: '134556666666',
+                        name: '自己安康快乐',
+                        email:'485849595959@qq.com',
+                        addName: '长大就按',
+                        authority:'管理员，运营',
+                        state: '2018年10月20日'
+                    }];
+
+                for(let i in data){
+                    data[i].ispublish = false;
+                    data[i].isEditor = false;
+                    data[i].isDelete = false;
+                    data[i].upicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangyi.png';
+                    data[i].downicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xiayi.png';
+                }
+                this.$nextTick(()=>{
+                    this.tableData = data;
+                })
             }
         },
         components:{

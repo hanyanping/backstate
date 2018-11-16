@@ -25,19 +25,40 @@
 }
 </style>
 <template>
-    <div class="headerbox">
-        <div class="logoIcon">
-            <img src="../assets/images/logo.png">
+    <div class="personInfo">
+        <div class="headerbox">
+            <div class="logoIcon">
+                <img src="../assets/images/logo.png">
+            </div>
+            <div class="rightText">
+                <span class="name cursor" @click="openPerson">yangxiaofeng@ifxj.com</span>
+                <span class="loginout"> 退出</span>
+            </div>
         </div>
-        <div class="rightText">
-            <span class="name">yangxiaofeng@ifxj.com</span>
-            <span class="loginout"> 退出</span>
-        </div>
+        <Personinfo v-if="isShow" @clickperson="closeinfo"></Personinfo>
     </div>
+
 </template>
 <script>
+    import  Personinfo from '../components/personinfo'
     export default {
-        name: "headercontent"
+        name: "headercontent",
+        components:{
+            Personinfo
+        },
+        data(){
+        return{
+                isShow: false,
+            }
+        },
+        methods:{
+            closeinfo(str){
+                this.isShow = false
+            },
+            openPerson(){
+                this.isShow = true;
+            }
+        }
     }
 </script>
 
