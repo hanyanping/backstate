@@ -83,7 +83,7 @@
                 <div class="imgContent">
                     <div class="block">
                         <el-carousel :autoplay='false'  @change='changeBanner' arrow="always" indicator-position="none" trigger="click" height="174px" ref="carousel">
-                            <el-carousel-item  v-for="item in photos" >
+                            <el-carousel-item  v-for="item in photos" :key="item.id">
                                 <div  class="back"  :style="{backgroundImage: 'url(' + item.url + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}">
                                 </div>
                             </el-carousel-item>
@@ -175,7 +175,7 @@
         created(){
             // this.getphotoList()
             this.startTime = new Date(this.timetrans('1551936730'))
-            console.log(Date.now())
+            console.log( this.startTime)
         },
         watch:{
             'radio'(){
@@ -193,14 +193,10 @@
         },
         mounted(){
             var width = $(".editorbanner").width();
-            console.log(width)
             var left = 0.5*(width - 600);
-            console.log(left)
-
             var height = document.body.offsetHeight,
                 scrollTop = document.body.scrollTop,
                 top = 0.5*(height-scrollTop-550);
-            console.log(height,scrollTop)
             $('.dialogcontent').css({"left":left,'top': top})
         },
         methods: {
@@ -261,7 +257,7 @@
                 });
             },
             sureImg(){//确定选中照片
-                this.$emit('clickbanner', 'editorphotos')
+                this.$emit('clickbanner', 'sure')
                 console.log(this.$refs.carousel.activeIndex)
                 if(this.radio == 2){
                     if(this.textarea == ''){
@@ -296,7 +292,7 @@
                 }
             },
             cancleImg(){
-                this.$emit('clickbanner', 'editorphotos')
+                this.$emit('clickbanner', 'cancle')
             },
         },
     }

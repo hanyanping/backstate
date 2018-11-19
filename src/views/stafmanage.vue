@@ -213,7 +213,6 @@
             },
             getBanner(str){
                 if(str == 'addphotos'){
-                    this.showAddbanner = false;
                 }
                 if(str == 'editornews'){
                     this.showEditornews = false;

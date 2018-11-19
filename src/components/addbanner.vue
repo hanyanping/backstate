@@ -121,7 +121,7 @@
                     <el-upload
                             class="upload-demo imgBox"
                             name="upfile"
-                            action="/sys/ueditor/index?action=uploadimage"
+                            action="http://devapi.ifxj.com/sys/ueditor/index?action=uploadimage"
                             :on-change="handleChange"
                             :on-success="handleAvatarSuccess"
                             :before-upload="beforeAvatarUpload"
@@ -177,14 +177,10 @@
         },
         mounted(){
             var width = $(".addbanner").width();
-            console.log(width)
             var left = 0.5*(width - 1000);
-            console.log(left)
-
             var height = document.body.offsetHeight,
                 scrollTop = document.body.scrollTop,
                 top = 0.5*(height-scrollTop-450);
-            console.log(height,scrollTop)
             $('.dialogcontent').css({"left":left,'top': top})
         },
         methods: {
@@ -217,19 +213,16 @@
             },
             deleteimg(url,event){//删除图片
                 event.stopPropagation();
-                console.log(url)
                 for(var i = 0;i < this.selectImg.length; i++){
                     if(this.selectImg[i] == url){
                         this.selectImg.splice(i, 1)
                     }
                 }
-                console.log(this.selectImg)
                 for(var i = 0;i < this.photos.length; i++){
                     if(this.photos[i].url == url){
                         this.photos.splice(i, 1)
                     }
                 }
-                console.log(this.photos)
             },
             select(item){//选择图片
                 if(this.selectImg.length>=2){//超过选择的数量，不可选择
@@ -254,24 +247,20 @@
                         }
                     }
                 }else{
-                    console.log(typeof (item.select))
                     item.select = !item.select;
                     if(item.select){
                         this.selectImg.push(item.url)
-                        console.log(this.selectImg)
                     }else{
                         var index = this.selectImg.indexOf(item.url)
                         this.selectImg.splice(index, 1);
                     }
-                    console.log(this.selectImg)
                 }
             },
             sureImg(){//确定选中照片
-                this.$emit('clickbanner', 'addphotos')
-                console.log(this.selectImg)
+                this.$emit('clickbanner', 'sure')
             },
             cancleImg(){
-
+                this.$emit('clickbanner', 'cancle')
             },
         },
     }

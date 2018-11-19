@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import HelloWorld from '@/components/HelloWorld'
 import home from '@/views/home'
 import backnews from '@/views/backnews'//公司动态
 import cooperative from  '@/views/cooperative'//合作伙伴

@@ -110,7 +110,7 @@
     import Util from '../common/util'
     import Service from '../common/service'
     export default {
-        name: "editorbanner",
+        name: "deletebanner",
         data() {
             return {
                 dialogImageUrl: '',
@@ -137,7 +137,6 @@
                 getMinutes = d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes()
                 getSeconds = d.getSeconds() < 10 ? '0' + d.getSeconds() : d.getSeconds()
                 var newTime = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() + ' ' + getHours + ':' + getMinutes + ':' + getSeconds;
-                console.log(newTime)
                 return newTime
             },
             open8(message) {
@@ -148,10 +147,10 @@
                 });
             },
             sureImg(){//确定选中照片
-                this.$emit('clickbanner', 'deletephotos')
+                this.$emit('clickbanner', 'sure')
             },
             cancleImg(){
-                this.$emit('clickbanner', 'deletephotos')
+                this.$emit('clickbanner', 'cancle')
             },
         },
     }

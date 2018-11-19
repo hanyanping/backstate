@@ -44,23 +44,22 @@
                             }
                             td:nth-of-type(3){
                                 min-width: 70px;
+                                position: relative;
+                                .warmtext{
+                                    position: absolute;
+                                    color: #fff;
+                                    font-size: 12px;
+                                    top: 20px;
+                                    background: #000;
+                                    padding: 4px;
+                                }
                                 .imgicon{
                                     display: inline-block;
                                     vertical-align: middle;
                                     height: 20px;
                                     width: 20px;
-                                    padding-right: 10px;
                                 }
-                            }
-                            td:nth-of-type(5){
-                                min-width: 120px;
-                                .imgicon{
-                                    display: inline-block;
-                                    vertical-align: middle;
-                                    height: 20px;
-                                    width: 20px;
-                                    padding-right: 10px;
-                                }
+
                             }
                             .upimg{
                                 display: inline-block;
@@ -108,12 +107,13 @@
                             </td>
                             <td>
                                 <img class="upimg imgicon cursor" v-if="index!=0" :src="item.upicon">
+                                <img class="upimg imgicon " v-if="index==0" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangyigray.png">
                                 <img class='downimg imgicon cursor' v-if="index!=(tableData.length-1)" :src="item.downicon">
+                                <img class='downimg imgicon ' v-if="index==(tableData.length-1)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xiayigray.png">
                             </td>
                             <td>
-                                <img class="deletimg imgicon cursor" @click="deleteBanner" :src="item.upicon"/>
-                                <img @click='editorBanner' class='editorimg imgicon cursor' :src="item.downicon"/>
-                                <img class="publishimg imgicon cursor"  :src="item.upicon"/>
+                                <span class="deleteText warmtext"  >删除</span>
+                                <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                             </td>
 
                         </tr>
@@ -143,7 +143,45 @@
                 showDeletebanner: false,
                 showAddbanner: false,
                 showEditorbanner: false,
-                tableData: [{
+                tableData: []
+            };
+        },
+        created(){
+            this.getCooperaData()
+            for(let i in this.tableData){
+                this.tableData[i].upicon= require('../assets/images/back.png')
+                this.tableData[i].downicon= require('../assets/images/down.png')
+            }
+        },
+        methods:{
+            enterStylethree(item){
+                item.isDelete = true;
+                this.$forceUpdate()
+            },
+            leaveStylethree(item){
+                item.isDelete = false;
+                this.$forceUpdate()
+            },
+            addBanner(){
+                this.showAddbanner = true;
+            },
+            editorBanner(){
+                this.showEditorbanner = true;
+            },
+            deleteBanner(){
+                this.showDeletebanner = true;
+            },
+            getCooperaData(str){
+                if(str == 'addphotos'){
+                    this.showAddbanner = false;
+                }
+                if(str == 'editorphotos'){
+                    this.showEditorbanner = false;
+                }
+                if(str == 'deletephotos'){
+                    this.showDeletebanner = false;
+                }
+                var data = [{
                     bannerurl: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/banben2.jpg',
                     url: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/banben2.jpg',
                     state: '2018年10月20日15点30分'
@@ -162,36 +200,17 @@
                         bannerurl: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/banben2.jpg',
                         url: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/banben2.jpg',
                         state: ''
-                    }]
-            };
-        },
-        created(){
-            for(let i in this.tableData){
-                this.tableData[i].upicon= require('../assets/images/back.png')
-                this.tableData[i].downicon= require('../assets/images/down.png')
-            }
-        },
-        methods:{
-            addBanner(){
-                this.showAddbanner = true;
-            },
-            editorBanner(){
-                this.showEditorbanner = true;
-            },
-            deleteBanner(){
-                this.showDeletebanner = true;
-            },
-            getBanner(str){
-                if(str == 'addphotos'){
-                    this.showAddbanner = false;
+                    }];
+                for(let i in data){
+                    data[i].isDelete = false;
+                    data[i].upicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangyi.png';
+                    data[i].downicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xiayi.png';
                 }
-                if(str == 'editorphotos'){
-                    this.showEditorbanner = false;
-                }
-                if(str == 'deletephotos'){
-                    this.showDeletebanner = false;
-                }
-            }
+                this.$nextTick(()=>{
+                    this.tableData = data;
+                })
+            },
+
         },
         components:{
             Aside,

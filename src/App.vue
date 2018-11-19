@@ -1,12 +1,23 @@
 <template>
   <div id="app">
+      <loading v-if="isLoading"></loading>
     <router-view/>
   </div>
 </template>
 
 <script>
+    import Store from './vuex/index';
+    import Loading from './components/loading';
 export default {
   name: 'App',
+    computed: {
+        isLoading: function () {
+            return Store.state.isLoading
+        }
+    },
+    components: {
+        Loading,
+    },
     data() {
         return {
             router:'home'

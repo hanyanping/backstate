@@ -78,6 +78,9 @@
                                 background: #0abf9b;
                                 padding: 8px 8px;
                             }
+                            .active {
+                                color: #0abf9b;
+                            }
                         }
                     }
                     .phone,.code{
@@ -170,9 +173,9 @@
                     </div>
                     <div class="codeBox">
                         <input class='code' v-model='code' type="text" placeholder="请输入验证码">
-                        <div class="codeText"><span class="codeSpan cursor">获取动态密码</span></div>
+                        <div class="codeText"><span class="codeSpan cursor" @click="getCodes($event)" :class="{active: isCode}">{{getCode}}</span></div>
                     </div>
-                    <div class="loginButton cursor">登录</div>
+                    <div class="loginButton cursor" @click="submit">登录</div>
                 </div>
             </div>
 
@@ -182,12 +185,16 @@
 
 <script>
     import patternRules from '../common/patternRules'
+    import Service from '../common/service'
     export default {
         name: "login",
         data() {
             return {
                 phone: '',
-                code: ''
+                code: '',
+                isCode: false,
+                getCode: "获取验证码",
+                time: 60,
             };
         },
         methods:{
@@ -203,6 +210,102 @@
                     type: 'warning'
                 });
             },
+            setCookie(name, value, day) {
+                //当设置的时间等于0时，不设置expires属性，cookie在浏览器关闭后删除
+                var expires = day * 1000;
+                var date = new Date(+new Date() + expires);
+                document.cookie = name + "=" + escape(value) + ";expires=" + date.toUTCString();
+            },
+            getCookie(name) {
+                var arr;
+                var reg = new RegExp("(^| )" + name + "=([^;]*)(;|$)");
+                if (arr = document.cookie.match(reg)) {
+                    return unescape(arr[2]);
+                }
+                else {
+                    return null;
+                }
+            },
+            //  获取验证码
+            getCodes(el) {
+                if (!((patternRules.mobile).test(this.phone))) {
+                    this.open3('请输入正确手机号！');
+                    return false
+                } else {
+                    let _that = this;
+                    var c = document.cookie.indexOf("cookieTime=");
+
+                    if (c != -1) {
+                        this.time = this.getCookie('cookieTime');
+                        console.log(this.time)
+                    } else {
+                        this.time = '60'
+                    }
+
+                    if (this.time >= 0 && this.isCode) {
+                        this.time = '60';
+                        return false
+                    } else {
+                        //调用接口
+                        Service.user().getRegcode({
+                            phone: this.phone
+                        }).then(response => {
+                            clearInterval(t);       //停止计时器
+                            el.target.innerHTML = _that.time + '秒后重试';
+                            this.isCode = true;
+                            var t = setInterval(function () {
+                                if (_that.time > 0) {
+                                    _that.time--;
+                                    _that.setCookie('cookieTime', _that.time, _that.time);
+                                    el.target.innerHTML = _that.time + '秒后重试'
+                                }
+                                if (_that.time === 0) {
+                                    _that.time = 10;
+                                    _that.isCode = false;
+                                    clearInterval(t);       //停止计时器
+                                    el.target.innerHTML = '重获验证码'
+                                }
+                            }, 1000)
+                        }, err => {
+                        });
+
+                    }
+                }
+            },
+            submit() {
+              if (!(patternRules.mobile.test(this.phone))) {
+                    this. open3("手机号码有误，请重填");
+                    return false;
+                }else if(this.phone.length == 0){
+                  this. open3("请输入手机号");
+                  return false;
+              }else if(this.code.length != 6){
+                  this. open3("请输入正确验证码");
+                  return false;
+              } else {
+                    Service.user().reglogin({
+                        phone: this.phone,
+                        code: parseInt(this.code),
+                        realName: this.name,
+                        shareUserId: this.shareUserId
+                    }).then(response => {
+                        if (response.hasOwnProperty('errorCode')) {
+                            if (response.errorCode == 0) {
+                                var obj = {
+                                    index: 0,
+                                    from: 'parent'
+                                }
+                                localStorage.setItem('param',JSON.stringify(obj))
+                                localStorage.removeItem("childparam");
+                                this.$router.push({name: 'home'})
+                            } else {
+                                this.open3(response.message)
+                            }
+                        }
+                    }, err => {
+                    })
+                }
+            }
         }
     }
 </script>

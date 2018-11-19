@@ -1,15 +1,25 @@
 <style rel="stylesheet/scss" lang="scss"  scoped>
     .editorNews{
         display: flex;
-        min-height: 100vh;
+        min-height:calc(100vh - 70px);
         /*background: rgba(0,0,0,0.2);*/
         .contanter{
             background: #f9f9f9;
+            flex:1;
             padding: 15px 36px;
+            .hometitle{
+                color: #0d0d0d;
+                font-size: 24px;
+                img{
+                    height: 20px;
+                    width: 20px;
+                    padding: 0 5px;
+                }
+            }
             .bannercontent{
-                position: absolute;
-                width:940px;
-                padding: 20px 30px;
+                background: #fff;
+                width: 100%;
+                margin-top: 15px;
                 .addtitle{
                     color: #929292;
                     font-size: 16px;
@@ -21,6 +31,38 @@
             .imgContent{
                 display: flex;
                 .contentLeft{
+                    width: 40%;
+                    padding: 20px 45px;
+                    .textbox{
+                        .textBacborder{
+                            background:  #f4f4f4;
+                            width: 350px;
+                            height: 214px;
+                        }
+                        .textBac{
+                            width: 350px;
+                            height: 214px;
+                            background-size: cover;
+                        }
+                        .title{
+                            font-size: 19px;
+                            color: #3d3d3d;
+                            margin: 15px auto;
+                        }
+                        .lead{
+                            font-size: 14px;
+                            padding: 5px 0px 15px;
+                            color: #929292;
+                        }
+                        .newsTime{
+                            font-size: 12px;
+                            color: #3d3d3d;
+                            padding: 10px 0 0;
+                        }
+                    }
+                }
+
+                .contentRight{
                     width: 50%;
                     padding: 20px 0;
                     .inputText{
@@ -54,7 +96,7 @@
                             height: 120px;
                         }
                         .upload-demo{
-                            border: 1px  solid #dcdcdc;
+                            border: 1px  solid #dcdfe6;
                             .el-button{
                                 color: #929292;
                                 font-size: 14px;
@@ -72,15 +114,16 @@
                             width: 386px;
                         }
                     }
+                    .wangEditor{
+                        padding: 10px 0;
+                    }
                 }
             }
             .button{
                 text-align: center;
                 margin-top: 50px;
                 height: 60px;
-                position: fixed;
-                bottom: 40px;
-                width: 940px;
+                width: 100%;
                 .surebutton{
                     color: #fff;
                     background: #0abf9b;
@@ -103,76 +146,81 @@
         <div class="editorNews">
             <Aside></Aside>
             <div class="contanter">
-                <div class="dialogcontent">
-                    <div class="bannercontent">
-                        <h3 class="addtitle"><span class="addimg">新建动态</span></h3>
-                        <div class="imgContent">
-                            <div class="contentLeft">
-                                <div class="inputText">
-                                    <span>标题 :</span><input class='newsTitle' placeholder="请输入标题" v-model='title' type="text">
+                <div class="hometitle">公司动态<img src="../assets/images/goline.png"><span class="addimg">{{title}}</span></div>
+                <div class="bannercontent">
+                    <div class="imgContent">
+                        <div class="contentLeft">
+                            <div class="textbox">
+                                <div class="textBacborder" v-if="imageUrl == ''"></div>
+                                <div class="textBac" v-if='imageUrl' :style="{backgroundImage: 'url(' + imageUrl + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}"></div>
+                                 <div class="newsTime">{{newsTime}}</div>
+                                <h3 class="title">{{titlecontent}}</h3>
+                                <p class="lead">{{textarea}}</p>
+                            </div>
+                        </div>
+                        <div class="contentRight">
+                            <div class="inputText">
+                                <span>标题 :</span><input class='newsTitle' placeholder="请输入标题" v-model='titlecontent' type="text">
+                            </div>
+                            <div class="inputText">
+                                <div class="block">
+                                    <span class="demonstration" style="margin-right: 5px;">动态时间 :</span>
+                                    <el-date-picker
+                                            @change="startdateChange"
+                                            v-model="newsTime"
+                                            type="date"
+                                            placeholder="选择日期"
+                                            format="yyyy 年 MM 月 dd 日"
+                                            value-format="yyyy-MM-dd">
+                                    </el-date-picker>
                                 </div>
-                                <div class="inputText">
-                                    <div class="block">
-                                        <span class="demonstration" style="margin-right: 5px;">动态时间 :</span>
-                                        <el-date-picker
-                                                @change="startdateChange"
-                                                v-model="newsTime"
-                                                type="date"
-                                                format="yyyy 年 MM 月 dd 日"
-                                                value-format="yyyy-MM-dd"
-                                                placeholder="选择日期">
-                                        </el-date-picker>
+                            </div>
+                            <div class="inputText">
+                                <div>封面图 : <span class="fengmiantest">(图片尺寸xxx像素*xxx像素)</span></div>
+                                <el-upload
+                                        class="upload-demo imgBox"
+                                        name="upfile"
+                                        action="http://devapi.ifxj.com/sys/ueditor/index?action=uploadimage"
+                                        :on-change="handleChange"
+                                        :on-success="handleAvatarSuccess"
+                                        :before-upload="beforeAvatarUpload"
+                                        :on-error="errphoto"
+                                        :show-file-list="false"
+                                        accept=".jpg,.jpeg,.png,.gif,.bmp,.JPG,.JPEG,.GIF,.BMP">
+                                    <div  class="uploadtext">
+                                        <img  class='uploadIcon' src="../assets/images/down.png">上传文件
                                     </div>
-                                </div>
-                                <div class="inputText">
-                                    <div>封面图 : <span class="fengmiantest">(图片尺寸xxx像素*xxx像素)</span></div>
-                                    <el-upload
-                                            class="upload-demo imgBox"
-                                            name="upfile"
-                                            action="/sys/ueditor/index?action=uploadimage"
-                                            :on-change="handleChange"
-                                            :on-success="handleAvatarSuccess"
-                                            :before-upload="beforeAvatarUpload"
-                                            :on-error="errphoto"
-                                            :show-file-list="false"
-                                            accept=".jpg,.jpeg,.png,.gif,.bmp,.JPG,.JPEG,.GIF,.BMP">
-                                        <div v-if="imageUrl" class="avatar" :style="{backgroundImage: 'url(' + imageUrl + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}"></div>
-                                        <div  v-if="imageUrl == ''" class="uploadtext">
-                                            <img  class='uploadIcon' src="../assets/images/down.png">上传文件
-                                        </div>
-                                        <!--<el-button v-if="imageUrl == ''" size="small" type="primary"></el-button>-->
-                                    </el-upload>
+                                    <!--<el-button v-if="imageUrl == ''" size="small" type="primary"></el-button>-->
+                                </el-upload>
 
-                                </div>
-                                <div class="inputText" style="display: flex;">
-                                    <span class="demonstration" style="margin-right: 10px;">摘要 :</span>
-                                    <el-input
-                                            type="textarea"
-                                            :rows="3"
-                                            placeholder="请输入内容"
-                                            v-model="textarea">
-                                    </el-input>
-                                </div>
-                                <div class="inputText" style="display: flex;">
-                                    <span class="demonstration" style="margin-right: 10px;">跳转方式 :</span>
-                                    <el-radio v-model="jumplink" label="1">无正文</el-radio>
-                                    <el-radio v-model="jumplink" label="2">链接正文</el-radio>
-                                </div>
+                            </div>
+                            <div class="inputText" style="display: flex;">
+                                <span class="demonstration" style="margin-right: 10px;">摘要 :</span>
+                                <el-input
+                                        type="textarea"
+                                        :rows="3"
+                                        placeholder="请输入内容"
+                                        v-model="textarea">
+                                </el-input>
+                            </div>
+                            <div class="inputText" style="display: flex;">
+                                <span class="demonstration" style="margin-right: 10px;">跳转方式 :</span>
+                                <el-radio v-model="jumplink" label="1">无正文</el-radio>
+                                <el-radio v-model="jumplink" label="2">链接正文</el-radio>
                             </div>
                             <div class="wangEditor">
                                 <UEditor :config=config ref="ueditor"></UEditor>
-                                <button size="primary" type="info" icon="plus" @click="getContent">获取内容</button>
                             </div>
                         </div>
-                        <div class="button">
-                            <span class="surebutton cursor" @click="sureImg">保存</span>
-                            <span class="canclebutton cursor" @click="cancleImg">预览</span>
-                            <span class="canclebutton cursor" @click="cancleImg">取消</span>
-                        </div>
+
+                    </div>
+                    <div class="button">
+                        <span class="surebutton cursor" @click="sureImg">保存</span>
+                        <span class="canclebutton cursor" @click="cancleImg">预览</span>
+                        <span class="canclebutton cursor" @click="cancleImg">取消</span>
                     </div>
                 </div>
             </div>
-            <Addbanner v-if='showAddbanner' @clickbanner="getBanner"></Addbanner>
         </div>
     </div>
 </template>
@@ -180,28 +228,22 @@
 <script>
     import Aside from '../components/aside'
     import Headercontent from '../components/headercontent'
-    import Addbanner from '../components/addbanner'
     import UEditor from "../components/ueditor.vue";
-    import  Deletebanner from '../components/deletebanner'
     export default {
         name: "addbanner",
         components: { UEditor,Aside ,Headercontent},
         data() {
             return {
-                expireTimeOption: {
-                    disabledDate(date) {
-                        return date.getTime() < Date.now() - 8.64e7;
-                    }
-                },
-                textarea: '',
+                textarea: '动态摘要',
                 jumplink: "1",
-                newsTime: '',
+                newsTime: '动态时间',
                 dialogImageUrl: '',
                 dialogVisible: false,
                 selectImg: [],
                 imageUrl: '',
                 file: '',
                 title: '',
+                titlecontent: '动态标题',
                 config: {
                     //可以在此处定义工具栏的内容
                     toolbars: [
@@ -228,10 +270,17 @@
         },
         created(){
             // this.getphotoList()
-
+           var type = localStorage.getItem('type');
+           if(type){
+               if(type == 'new'){
+                   this.title = '新建动态'
+               }else if(type == 'editor'){
+                   this.title = '编辑动态'
+               }
+           }
+            this.newsTime = this.timetrans('1551936730')
         },
         mounted(){
-            this.newsTime = new Date(this.timetrans('1541916730'))
             var width = $(".editorNews").width();
             var left = 0.5*(width - 1000);
             var height = document.body.offsetHeight,
@@ -243,6 +292,7 @@
             timetrans(timestamp) {//初始化时间
                 var getSeconds = '', getMinutes = '', getHours = '';
                 var d = new Date(timestamp*1000);
+
                 getHours = d.getHours() < 10 ? '0' + d.getHours() : d.getHours();
                 getMinutes = d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes()
                 getSeconds = d.getSeconds() < 10 ? '0' + d.getSeconds() : d.getSeconds()
@@ -253,8 +303,6 @@
             //获取文档内容
             getContent: function() {
                 let content = this.$refs.ueditor.getUEContent();
-                console.log(content);
-                alert(content);
             },
             errphoto(err, file, fileList){
                 console.log(err)

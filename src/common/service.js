@@ -4,6 +4,7 @@ import axios from 'axios'
 import Global from './global'
 import Util from './util'
 import Store from '../vuex/index'
+import { Message } from 'element-ui';
 axios.interceptors.request.use(config => {
     Store.commit("setIsLoading", true);
     return config
@@ -25,10 +26,7 @@ function errorState(response) {
     if (response.status == '200') {
 
     } else {
-        Toast({
-            message: '请求超时，请稍后再试！',
-            duration: 3000,
-        });
+        Message.error('请求超时，请稍后再试！')
     }
 
 }
@@ -40,31 +38,13 @@ function successState(response) {
 
         if (response.data.errorCode == 0) {
         } else if (response.data.errorCode == -1) {
-            Toast({
-                message: '服务端错误，请联系管理员',
-                duration: 3000
-            });
+            Message.error('服务端错误，请联系管理员');
         } else if (response.data.errorCode == 1) {
-            Toast({
-                message: response.data.message,
-                duration: 3000
-            });
+            Message.error(response.data.message);
         } else if (response.data.errorCode == 5001) {
-            Util.localStorageUtil.clear('access_token');
-            Util.localStorageUtil.clear('userInfo');
-            var signUrl = window.location.href;
-            if (signUrl.indexOf('code') > 0) {
-                signUrl = signUrl.substring(0, signUrl.indexOf('code'));
-            }
-            var linkUrl = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=' + Global.weixinInfo.appId + '&redirect_uri=' + encodeURIComponent(signUrl) + '&response_type=code&scope=snsapi_userinfo&state=123#wechat_redirect';
-            console.log(linkUrl)
-            window.location.href = linkUrl;
         }
     } else {
-        Toast({
-            message: '网络请求错误',
-            duration: 3000
-        });
+        Message.error('网络请求错误');
     }
 }
 
@@ -77,6 +57,7 @@ const getResource = (opts, data) => {
     if(opts.url.indexOf('sys/ueditor/index') >= 0){
         contentType = 'multipart/form-data'
     }
+    console.log( Global.requestUrl)
     let httpDefaultOpts = { //http默认配置
         method: opts.method,
         baseURL: Global.requestUrl,
@@ -174,15 +155,9 @@ export default {
                     method: 'get'
                 }, data)
             },
-            getLoginCode: function (data) {
+            getRegcode: function (data) {
                 return getResource({
-                    url: '/usr/user/loginCode',
-                    method: 'get'
-                }, data)
-            },
-            postLoginCode: function (data) {
-                return getResource({
-                    url: '/usr/user/loginCode',
+                    url: 'usr/user/reg/code',
                     method: 'post'
                 }, data)
             },

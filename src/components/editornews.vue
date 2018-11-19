@@ -228,7 +228,6 @@
         },
         created(){
             // this.getphotoList()
-
         },
         mounted(){
             this.newsTime = new Date(this.timetrans('1541916730'))
@@ -274,10 +273,10 @@
             startdateChange(val){
             },
             sureImg(){
-                this.$emit('clickbanner', 'editornews')
+                this.$emit('clickbanner', 'sureNews')
             },
             cancleImg(){
-
+                this.$emit('clickbanner', 'cancleNews')
             },
         },
     }

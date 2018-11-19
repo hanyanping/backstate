@@ -2,7 +2,7 @@
     .newscontent{
         display: flex;
         min-height:calc(100vh - 70px);
-        .contanter{
+        .contanternews{
             background: #f9f9f9;
             flex:1;
             padding: 15px 36px;
@@ -102,7 +102,7 @@
         <Headercontent></Headercontent>
         <div class="newscontent">
             <Aside></Aside>
-            <div class="contanter">
+            <div class="contanternews">
                 <div class="hometitle">公司动态</div>
                 <div class="bannerTable">
                     <div class="tableBox">
@@ -121,7 +121,7 @@
                                 <td>{{item.state}}</td>
                                 <td>
                                     <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>
-                                    <img @click='editorBanner' @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
+                                    <img @click="editorBanner('editor')" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
                                     <span class="deleteText warmtext" v-if="item.isDelete" >删除</span>
                                     <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                                 </td>
@@ -141,13 +141,12 @@
                         </div>
                     </div>
                     <div class="homebutton">
-                        <span class="sureButton cursor" @click="editorBanner">新建动态</span>
+                        <span class="sureButton cursor" @click="editorBanner('new')">新建动态</span>
                     </div>
                 </div>
             </div>
-            <Addbanner v-if='showAddbanner' @clickbanner="getBanner"></Addbanner>
-            <Editornews v-if='showEditornews' @clickbanner="getBanner"></Editornews>
-            <Deletebanner v-if='showDeletebanner' @clickbanner="getBanner"></Deletebanner>
+            <Editornews v-if='showEditornews' @clickbanner="getNews"></Editornews>
+            <Deletebanner v-if='showDeletebanner' @clickbanner="getNews"></Deletebanner>
         </div>
     </div>
 </template>
@@ -170,7 +169,7 @@
             };
         },
         created(){
-            this.getBanner();
+            this.getNews();
         },
         methods:{
             enterStyletwo(item){
@@ -199,21 +198,23 @@
             addBanner(){
                 this.showEditornews = true;
             },
-            editorBanner(){
+            editorBanner(type){
                 // this.showEditornews = true;
-                this.$router.push({'path':'/editornews'})
+                localStorage.setItem('type', type)
+                this.$router.push({'name':'editornews'})
             },
             deleteBanner(){
                 this.showDeletebanner = true;
             },
-            getBanner(str){
-                if(str == 'addphotos'){
+            getNews(str){
+                if(str == 'sureNews'){
                     this.showAddbanner = false;
-                }
-                if(str == 'editornews'){
                     this.showEditornews = false;
+                    this.showDeletebanner = false;
                 }
-                if(str == 'deletephotos'){
+                if(str == 'cancleNews'){
+                    this.showAddbanner = false;
+                    this.showEditornews = false;
                     this.showDeletebanner = false;
                 }
                 var data = [{

@@ -84,12 +84,11 @@
 <template>
     <div id="aside">
         <ul class="firstAside">
-            <li  class='cursor firstLi' @mouseenter="enterStyle(item)" @mouseleave='leaveStyle(item)' :class="{liactive:item.isSubShow}" v-for="(item,index) in items">
+            <li  class='cursor firstLi' @mouseenter="enterStyle(item)" @mouseleave='leaveStyle(item)' @click="showToggle(item,index)" :class="{liactive:item.isSubShow}" v-for="(item,index) in items">
                 <span :class="{active:item.isSubShow}"></span>
-                <img :src='item.greyIcon' v-if="!item.showIcon" @click="showToggle(item,index)">
-                <img :src='item.greenIcon' v-if="item.showIcon" @click="showToggle(item,index)">
+                <img :src='item.greyIcon' v-if="!item.showIcon" >
+                <img :src='item.greenIcon' v-if="item.showIcon">
                 <span v-if="item.isShow" class="warmText">{{item.name}}</span>
-                <!--<span  class="warmText">{{item.name}}</span>-->
             </li>
         </ul>
         <ul class="secondAside">
@@ -213,8 +212,6 @@
         created() {
             var params = JSON.parse(localStorage.getItem('param'));
             var childparam = JSON.parse(localStorage.getItem('childparam'));
-            console.log(params)
-            console.log(childparam)
             if(params){
                 if(params.from == 'parent'){
                     for(let i in this.items){
@@ -226,8 +223,6 @@
                             this.items[i].showIcon = true;
                             this.secondContent =  this.items[i].subItems;
                             this.secondContent[0].isSubShow = true;
-                            console.log(i)
-                            console.log( this.items)
                             this.title =  this.items[i].subItems[0].title;
                         }
                     }

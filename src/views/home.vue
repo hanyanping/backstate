@@ -165,14 +165,7 @@
             };
         },
         created(){
-            this.getBanner();
-            console.log(this.tableData)
-            // var obj = {
-            //     'ispublish':false,
-            //     'isEditor':false,
-            //     'isDelete':false,
-            // }
-            // this.tableData.push(obj)
+            this.getBanner();//获取首页横幅表个数据
         },
         mounted(){
 
@@ -213,13 +206,14 @@
                 this.showDeletebanner = true;
             },
             getBanner(str){
-                if(str == 'addphotos'){
+                if(str == 'sure'){//添加banner,点击确定按钮刷新列表，关闭弹框
                     this.showAddbanner = false;
-                }
-                if(str == 'editorphotos'){
                     this.showEditorbanner = false;
+                    this.showDeletebanner = false;
                 }
-                if(str == 'deletephotos'){
+                if(str == 'cancle'){//点击取消按钮不需要刷新列表，关闭编辑banner弹框，
+                    this.showAddbanner = false;
+                    this.showEditorbanner = false;
                     this.showDeletebanner = false;
                 }
                 var data = [{
