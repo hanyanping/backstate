@@ -201,7 +201,7 @@
                                         <td>{{item.state}}</td>
                                         <td>
                                             <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>
-                                            <img @click='editorBanner' @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
+                                            <img @click="editorBanner('editor','13966')" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
                                             <span class="deleteText warmtext" v-if="item.isDelete" >删除</span>
                                             <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                                         </td>
@@ -290,7 +290,6 @@
                 </div>
             </div>
             <Addbanner v-if='showAddbanner' @clickbanner="getBanner"></Addbanner>
-            <Editornews v-if='showEditornews' @clickbanner="getBanner"></Editornews>
             <Deletebanner v-if='showDeletebanner' @clickbanner="getBanner"></Deletebanner>
         </div>
     </div>
@@ -300,7 +299,6 @@
     import Aside from '../components/aside'
     import Headercontent from '../components/headercontent'
     import Addbanner from '../components/addbanner'
-    import  Editornews from '../components/editornews'
     import  Deletebanner from '../components/deletebanner'
     export default {
         name: "healthinquiry",
@@ -387,8 +385,10 @@
             addBanner(){
                 this.showEditornews = true;
             },
-            editorBanner(){
-                this.showEditornews = true;
+            editorBanner(type,id){
+                // this.showEditornews = true;
+                localStorage.setItem('type', type)
+                this.$router.push({'name':'editornews',query:{id: id}})
             },
             deleteBanner(){
                 this.showDeletebanner = true;
@@ -409,7 +409,6 @@
             Aside,
             Headercontent,
             Addbanner,
-            Editornews,
             Deletebanner
         },
     }

@@ -121,8 +121,8 @@
                                 <td>{{item.state}}</td>
                                 <td>
                                     <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>
-                                    <img @click="editorBanner('editor')" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
-                                    <span class="deleteText warmtext" v-if="item.isDelete" >删除</span>
+                                    <img @click="editorBanner('editor','13966')" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
+                                    <span class="deleteText warmtext" v-if="item.isDelete" style="margin-left: -6px;">删除</span>
                                     <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                                 </td>
 
@@ -141,11 +141,10 @@
                         </div>
                     </div>
                     <div class="homebutton">
-                        <span class="sureButton cursor" @click="editorBanner('new')">新建动态</span>
+                        <span class="sureButton cursor" @click="editorBanner('new','')">新建动态</span>
                     </div>
                 </div>
             </div>
-            <Editornews v-if='showEditornews' @clickbanner="getNews"></Editornews>
             <Deletebanner v-if='showDeletebanner' @clickbanner="getNews"></Deletebanner>
         </div>
     </div>
@@ -155,7 +154,6 @@
     import Aside from '../components/aside'
     import Headercontent from '../components/headercontent'
     import Addbanner from '../components/addbanner'
-    import  Editornews from '../components/editornews'
     import  Deletebanner from '../components/deletebanner'
     export default {
         name: "home",
@@ -198,10 +196,10 @@
             addBanner(){
                 this.showEditornews = true;
             },
-            editorBanner(type){
+            editorBanner(type,id){
                 // this.showEditornews = true;
                 localStorage.setItem('type', type)
-                this.$router.push({'name':'editornews'})
+                this.$router.push({'name':'editornews',query:{id: id}})
             },
             deleteBanner(){
                 this.showDeletebanner = true;
@@ -249,7 +247,6 @@
             Aside,
             Headercontent,
             Addbanner,
-            Editornews,
             Deletebanner
         },
     }

@@ -121,30 +121,12 @@ export default {
     },
     sys() {
         return {
-            getBanner: function (data, key) { //地区
+            getarticleDetail: function (data, key) {//文章详情
                 return getResource({
-                    url: `/sys/advert/${key}`,
-                    method: 'get'
-                }, data)
-            },
-            getBank: function (data) { //银行
-                return getResource({
-                    url: '/sys/bank/all',
-                    method: 'get'
-                }, data)
-            },
-            getPosterList: function (data, key) {//海报邀请列表
-                return getResource({
-                    url: '/sys/poster',
+                    url: `/sys/article/${key}`,
                     method: 'get'
                 })
-            },
-            getPosterimg: function (data, key) {//海报邀请列表
-                return getResource({
-                    url: `/prod/poster/${key}/image`,
-                    method: 'get'
-                }, data)
-            },
+            }
         }
     },
     user() {

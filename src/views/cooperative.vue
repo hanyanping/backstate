@@ -2,7 +2,7 @@
     .cooperative{
         .content{
             display: flex;
-            height:calc(100vh - 70px);
+            min-height:calc(100vh - 70px);
             .contanter{
                 background: #f9f9f9;
                 flex:1;
@@ -52,6 +52,7 @@
                                     top: 20px;
                                     background: #000;
                                     padding: 4px;
+                                    margin-left: -6px;
                                 }
                                 .imgicon{
                                     display: inline-block;
@@ -112,20 +113,19 @@
                                 <img class='downimg imgicon ' v-if="index==(tableData.length-1)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xiayigray.png">
                             </td>
                             <td>
-                                <span class="deleteText warmtext"  >删除</span>
+                                <span class="deleteText warmtext" v-if="item.isDelete">删除</span>
                                 <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                             </td>
 
                         </tr>
                     </table>
                     <div class="homebutton">
-                        <span class="sureButton cursor" @click="addBanner">添加logo</span>
+                        <span class="sureButton cursor" @click="addLogo">添加logo</span>
                     </div>
                 </div>
             </div>
-            <Addbanner v-if='showAddbanner' @clickbanner="getBanner"></Addbanner>
-            <Editorbanner v-if='showEditorbanner' @clickbanner="getBanner"></Editorbanner>
-            <Deletebanner v-if='showDeletebanner' @clickbanner="getBanner"></Deletebanner>
+            <Addbanner :source="source" v-if='showAddbanner' @clickbanner="getCooperaData"></Addbanner>
+            <Deletebanner v-if='showDeletebanner' @clickbanner="getCooperaData"></Deletebanner>
         </div>
     </div>
 </template>
@@ -134,12 +134,12 @@
     import Aside from '../components/aside'
     import Headercontent from '../components/headercontent'
     import Addbanner from '../components/addbanner'
-    import  Editorbanner from '../components/editorbanner'
     import  Deletebanner from '../components/deletebanner'
     export default {
-        name: "home",
+        name: "cooperative",
         data() {
             return {
+                source: 'cooperative',
                 showDeletebanner: false,
                 showAddbanner: false,
                 showEditorbanner: false,
@@ -148,10 +148,6 @@
         },
         created(){
             this.getCooperaData()
-            for(let i in this.tableData){
-                this.tableData[i].upicon= require('../assets/images/back.png')
-                this.tableData[i].downicon= require('../assets/images/down.png')
-            }
         },
         methods:{
             enterStylethree(item){
@@ -162,7 +158,7 @@
                 item.isDelete = false;
                 this.$forceUpdate()
             },
-            addBanner(){
+            addLogo(){
                 this.showAddbanner = true;
             },
             editorBanner(){
@@ -172,13 +168,12 @@
                 this.showDeletebanner = true;
             },
             getCooperaData(str){
-                if(str == 'addphotos'){
+                if(str == 'sure'){
                     this.showAddbanner = false;
+                    this.showDeletebanner = false;
                 }
-                if(str == 'editorphotos'){
-                    this.showEditorbanner = false;
-                }
-                if(str == 'deletephotos'){
+                if(str == 'cancle'){
+                    this.showAddbanner = false;
                     this.showDeletebanner = false;
                 }
                 var data = [{
@@ -216,7 +211,6 @@
             Aside,
             Headercontent,
             Addbanner,
-            Editorbanner,
             Deletebanner
         },
     }

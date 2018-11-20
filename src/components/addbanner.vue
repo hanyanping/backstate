@@ -37,14 +37,15 @@
                         font-size: 14px;
                         border: none;
                         background: #fff;
-                        .uploadIcon{
-                            height: 20px;
-                            width: 22px;
-                            display: inline-block;
-                            vertical-align: middle;
-                            margin-right: 6px;
-                        }
+
                     }
+                }
+                .uploadIcon{
+                    height: 20px;
+                    width: 22px;
+                    display: inline-block;
+                    vertical-align: middle;
+                    margin-right: 6px;
                 }
                 .imgBox{
                     width: 25%;
@@ -94,8 +95,8 @@
                 margin-top: 50px;
                 height: 60px;
                 position: fixed;
-                bottom: 70px;
-                width: 100%;
+                bottom: 80px;
+                width: 940px;
                 .surebutton{
                     color: #fff;
                     background: #0abf9b;
@@ -129,7 +130,6 @@
                             :show-file-list="false"
                             accept=".jpg,.jpeg,.png,.gif,.bmp,.JPG,.JPEG,.GIF,.BMP"
                     >
-
                         <el-button size="small" type="primary"><img class='uploadIcon' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangchuan.png">上传文件</el-button>
                     </el-upload>
                     <div class="imgBox cursor" v-for="(item,index) in photos">
@@ -146,7 +146,8 @@
                     </div>
                 </div>
                 <div class="button">
-                    <span class="surebutton cursor" @click="sureImg">确定</span>
+                    <span v-if="source == 'cooperative'" class="surebutton cursor" @click="sureLogo">确定</span>
+                    <span v-else class="surebutton cursor" @click="sureImg">确定</span>
                     <span class="canclebutton cursor" @click="cancleImg">取消</span>
                 </div>
             </div>
@@ -168,12 +169,24 @@
                 selectImg: [],
                 imgUrl: '',
                 file:'',
-                photos:[],
                 photos:[{'isdelete':false,'disabled':false,select:false,'url':'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bac2.png',id:'1'},{'isdelete':false,'disabled':false,'select':false,'url':'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/guanyuwomen_banner.jpg',id:'2'},{'isdelete':false,'disabled':false,'select':false,'url':'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xinwen_banner.jpg',id:'3'}]
             };
         },
         created(){
             // this.getphotoList()
+        },
+        mounted(){
+        },
+        props: {
+            source:{
+                type: String,
+                required: true
+            }
+        },
+        watch: {
+            'source'(){
+                console.log(this.source)
+            }
         },
         mounted(){
             var width = $(".addbanner").width();
@@ -257,6 +270,11 @@
                 }
             },
             sureImg(){//确定选中照片
+                console.log(33333)
+                this.$emit('clickbanner', 'sure')
+            },
+            sureLogo(){//合作伙伴
+                console.log(44444)
                 this.$emit('clickbanner', 'sure')
             },
             cancleImg(){

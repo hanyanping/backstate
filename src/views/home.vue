@@ -129,7 +129,7 @@
 
                                 <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>
                                 <img @click='editorBanner' @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
-                                <span class="deleteText warmtext" v-if="item.isDelete" >删除</span>
+                                <span class="deleteText warmtext" v-if="item.isDelete" style="margin-left: -6px;">删除</span>
                                 <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                             </td>
 
@@ -141,7 +141,7 @@
                     </div>
                 </div>
             </div>
-            <Addbanner v-if='showAddbanner' @clickbanner="getBanner"></Addbanner>
+            <Addbanner v-if='showAddbanner' :source="source" @clickbanner="getBanner"></Addbanner>
             <Editorbanner v-if='showEditorbanner' @clickbanner="getBanner"></Editorbanner>
             <Deletebanner v-if='showDeletebanner' @clickbanner="getBanner"></Deletebanner>
         </div>
@@ -158,6 +158,7 @@
         name: "home",
         data() {
             return {
+                source: '',
                 showDeletebanner: false,
                 showAddbanner: false,
                 showEditorbanner: false,

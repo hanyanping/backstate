@@ -130,7 +130,6 @@
                 </div>
             </div>
             <Addrole v-if='showAddrole' @clickbanner="getBanner"></Addrole>
-            <Editornews v-if='showEditornews' @clickbanner="getBanner"></Editornews>
             <Deletebanner v-if='showDeletebanner' @clickbanner="getBanner"></Deletebanner>
         </div>
     </div>
@@ -140,7 +139,6 @@
     import Aside from '../components/aside'
     import Headercontent from '../components/headercontent'
     import Addrole from '../components/addRole'
-    import  Editornews from '../components/editornews'
     import  Deletebanner from '../components/deletebanner'
     export default {
         name: "home",
@@ -245,7 +243,6 @@
             Aside,
             Headercontent,
             Addrole,
-            Editornews,
             Deletebanner
         },
     }

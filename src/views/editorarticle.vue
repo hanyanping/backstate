@@ -153,14 +153,14 @@
         <div class="editorNews">
             <Aside></Aside>
             <div class="contanter">
-                <div class="hometitle">公司动态<img src="../assets/images/goline.png"><span class="addimg">{{title}}</span></div>
+                <div class="hometitle">文章<img src="../assets/images/goline.png"><span class="addimg">{{title}}</span></div>
                 <div class="bannercontent">
                     <div class="imgContent">
                         <div class="contentLeft">
                             <div class="textbox">
                                 <div class="textBacborder" v-if="imageUrl == ''"></div>
                                 <div class="textBac" v-if='imageUrl' :style="{backgroundImage: 'url(' + imageUrl + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}"></div>
-                                 <div class="newsTime">{{newsTime}}</div>
+                                <div class="newsTime">{{newsTime}}</div>
                                 <h3 class="title">{{titlecontent}}</h3>
                                 <p class="lead">{{textarea}}</p>
                             </div>
@@ -236,7 +236,7 @@
     import Headercontent from '../components/headercontent'
     import UEditor from "../components/ueditor.vue";
     export default {
-        name: "addbanner",
+        name: "editorarticle",
         components: { UEditor,Aside ,Headercontent},
         data() {
             return {
@@ -277,17 +277,17 @@
         },
         created(){
             // this.getphotoList()
-           var type = localStorage.getItem('type');
-           if(this.$route.query.id){
-               this.id = this.$route.query.id;
-           }
-           if(type){
-               if(type == 'new'){
-                   this.title = '新建动态'
-               }else if(type == 'editor'){
-                   this.title = '编辑动态'
-               }
-           }
+            var type = localStorage.getItem('type');
+            if(this.$route.query.id){
+                this.id = this.$route.query.id;
+            }
+            if(type){
+                if(type == 'new'){
+                    this.title = '新建动态'
+                }else if(type == 'editor'){
+                    this.title = '编辑动态'
+                }
+            }
             this.newsTime = this.timetrans('1551936730');
         },
         mounted(){

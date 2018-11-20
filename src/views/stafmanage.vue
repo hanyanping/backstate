@@ -146,7 +146,7 @@
                 </div>
             </div>
             <Addstaf v-if='showAddstaf' @clickbanner="getBanner"></Addstaf>
-            <Editornews v-if='showEditornews' @clickbanner="getBanner"></Editornews>
+
             <Deletebanner v-if='showDeletebanner' @clickbanner="getBanner"></Deletebanner>
         </div>
     </div>
@@ -156,7 +156,6 @@
     import Aside from '../components/aside'
     import Headercontent from '../components/headercontent'
     import Addstaf from '../components/addstaf'
-    import  Editornews from '../components/editornews'
     import  Deletebanner from '../components/deletebanner'
     export default {
         name: "home",
@@ -177,12 +176,10 @@
             enterStyletwo(item){
                 item.isEditor = true;
                 this.$forceUpdate();
-                console.log(item)
             },
             leaveStyletwo(item){
                 item.isEditor = false;
                 this.$forceUpdate();
-
             },
             enterStylethree(item){
                 item.isDelete = true;
@@ -205,8 +202,7 @@
                 this.showEditornews = true;
             },
             editorBanner(){
-                // this.showEditornews = true;
-                this.$router.push({'path':'/editornews'})
+                this.showEditornews = true;
             },
             deleteBanner(){
                 this.showDeletebanner = true;
@@ -261,7 +257,6 @@
             Aside,
             Headercontent,
             Addstaf,
-            Editornews,
             Deletebanner
         },
     }

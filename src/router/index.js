@@ -8,8 +8,10 @@ import healthnews from '@/views/healthnews'//健康新闻
 import healthvoice from '@/views/healthvoice'//健康之声
 import stafmanage from '@/views/stafmanage'//健康之声
 import rolemanage from '@/views/rolemanage'//角色管理
-import editornews from '@/views/editornews'//新建动态
+import editornews from '@/views/editornews'//新建/编辑动态
+import editorarticle from '@/views/editorarticle'//新建/编辑文章
 import login from '@/views/login'//新建动态
+import previewdetail from '@/views/previewdetail'//预览正文
 Vue.use(Router)
 export default new Router({
     mode: 'history',
@@ -29,6 +31,11 @@ export default new Router({
             path: '/cooperative',
             name: 'cooperative',
             component: cooperative
+        },
+        {
+            path: '/editorarticle',
+            name: 'editorarticle',
+            component: editorarticle
         },
         {
               path: '/healthinquiry',
@@ -64,6 +71,11 @@ export default new Router({
             path: '/login',
             name: 'login',
             component: login
-        }
+        },
+        {
+            path: '/previewdetail',
+            name: 'previewdetail',
+            component: previewdetail
+        },
   ]
 })
