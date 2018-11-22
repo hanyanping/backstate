@@ -34,30 +34,57 @@
                     width: 40%;
                     padding: 20px 45px;
                     .textbox{
-                        .textBacborder{
-                            background:  #f4f4f4;
-                            width: 350px;
-                            height: 214px;
+                        text-align: left;
+                        position: relative;
+                        padding-bottom: 20px;
+                        cursor: pointer;
+                        .backiconno{
+                            width: 100%;
+                            height: 170px;
+                            background: #f4f4f4f4;
                         }
-                        .textBac{
+                        .backicon{
                             width: 350px;
                             height: 214px;
                             background-size: cover;
                         }
-                        .title{
-                            font-size: 19px;
-                            color: #3d3d3d;
-                            margin: 15px auto;
+                        .lable{
+                            position: absolute;
+                            top: 0;
+                            height: 32px;
+                            padding: 0 8px 0 0;
+                            background-color: #0abf9b;
+                            line-height: 32px;
+                            text-align: center;
+                            .fl{
+                                padding-left: 5px;
+                            }
+                            .lableIcon{
+                                img{
+                                    height: 18px;
+                                    width: 18px;
+                                    display: inline-block;
+                                    vertical-align: middle;
+                                }
+                            }
+                            .lableText{
+                                color: #fff;
+                                font-size: 12px;
+                                display: inline-block;
+                                vertical-align: middle;
+                            }
                         }
                         .lead{
                             font-size: 14px;
-                            padding: 5px 0px 15px;
-                            color: #929292;
-                        }
-                        .newsTime{
-                            font-size: 12px;
+                            padding: 20px 15px 0;
                             color: #3d3d3d;
-                            padding: 10px 0 0;
+                            font-weight: 600;
+                            display: -webkit-box;
+                            height: 60px;
+                            -webkit-box-orient: vertical;
+                            -webkit-line-clamp: 2;
+                            overflow: hidden;
+                            margin-bottom: 0px;
                         }
                     }
                 }
@@ -157,12 +184,19 @@
                 <div class="bannercontent">
                     <div class="imgContent">
                         <div class="contentLeft">
-                            <div class="textbox">
-                                <div class="textBacborder" v-if="imageUrl == ''"></div>
-                                <div class="textBac" v-if='imageUrl' :style="{backgroundImage: 'url(' + imageUrl + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}"></div>
-                                <div class="newsTime">{{newsTime}}</div>
-                                <h3 class="title">{{titlecontent}}</h3>
-                                <p class="lead">{{textarea}}</p>
+                            <div class="textbox" >
+                                <div class="backiconno" v-if="!imageUrl"></div>
+                                <!--<div class="backicon">-->
+                                <div class="backicon" v-if="imageUrl" :style="{backgroundImage: 'url(' + imageUrl + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}"></div>
+                                <div class="lable clear">
+                                    <div  class='fl' >
+                                         <span class="lableIcon">
+                                             <img :src="getArticleImg(classify)">
+                                        </span>
+                                        <span class="lableText">{{getArticleTitle('养生')}}</span>
+                                    </div>
+                                </div>
+                                <p class="lead"  v-html="titlecontent"></p>
                             </div>
                         </div>
                         <div class="contentRight">
@@ -171,19 +205,19 @@
                             </div>
                             <div class="inputText">
                                 <div class="block">
-                                    <span class="demonstration" style="margin-right: 5px;">动态时间 :</span>
-                                    <el-date-picker
-                                            @change="startdateChange"
-                                            v-model="newsTime"
-                                            type="date"
-                                            placeholder="选择日期"
-                                            format="yyyy 年 MM 月 dd 日"
-                                            value-format="yyyy-MM-dd">
-                                    </el-date-picker>
+                                    <span class="demonstration" style="margin-right: 5px;">分类 :</span>
+                                    <el-select v-model="classify" placeholder="请选择文章分类">
+                                        <el-option
+                                                v-for="item in classifyoptions"
+                                                :key="item.value"
+                                                :label="item.label"
+                                                :value="item.value">
+                                        </el-option>
+                                    </el-select>
                                 </div>
                             </div>
                             <div class="inputText">
-                                <span class="demonstration" style="margin-right: 5px;margin-left: 30px">封面图 : <span class="fengmiantest">(图片尺寸800像素*600像素)</span></span>
+                                <span class="demonstration" style="margin-right: 5px;margin-left: 30px">封面图 : <span class="fengmiantest">(图片尺寸490像素*320像素)</span></span>
                                 <el-upload
                                         class="upload-demo imgBox"
                                         name="upfile"
@@ -209,16 +243,15 @@
                                         v-model="textarea">
                                 </el-input>
                             </div>
-                            <div class="inputText" style="display: flex;">
-                                <span class="demonstration" style="margin-right: 10px;">跳转方式 :</span>
-                                <el-radio v-model="jumplink" label="1">无正文</el-radio>
-                                <el-radio v-model="jumplink" label="2">链接正文</el-radio>
-                            </div>
-                            <div class="wangEditor" v-if="jumplink == 2">
-                                <UEditor v-if="jumplink == 2" :setid=id :config=config ref="ueditor"></UEditor>
+                            <!--<div class="inputText" style="display: flex;">-->
+                                <!--<span class="demonstration" style="margin-right: 10px;">跳转方式 :</span>-->
+                                <!--<el-radio v-model="jumplink" label="1">无正文</el-radio>-->
+                                <!--<el-radio v-model="jumplink" label="2">链接正文</el-radio>-->
+                            <!--</div>-->
+                            <div class="wangEditor">
+                                <UEditor :setid=id :config=config ref="ueditor"></UEditor>
                             </div>
                         </div>
-
                     </div>
                     <div class="button">
                         <span class="surebutton cursor" @click="saveNews">保存</span>
@@ -235,22 +268,26 @@
     import Aside from '../components/aside'
     import Headercontent from '../components/headercontent'
     import UEditor from "../components/ueditor.vue";
+    import Filter from '../common/filter'
     export default {
         name: "editorarticle",
         components: { UEditor,Aside ,Headercontent},
         data() {
             return {
+                classify: '',
+                classifyoptions:[{value: '1',label: '中医' },{value: '2',label: '养生'},{value: '3',label: '心理'},
+                {value: '4',label: '运动'},{value: '5',label: '美丽'},{value: '6',label: '家庭'},{value: '7',label: '育儿'}
+                ,{value: '',label: '健康'}],
                 id: '',
-                textarea: '动态摘要',
-                jumplink: "1",
-                newsTime: '动态时间',
+                textarea: '资讯摘要',
+                newsTime: '文章发表时间',
                 dialogImageUrl: '',
                 dialogVisible: false,
                 selectImg: [],
                 imageUrl: '',
                 file: '',
                 title: '',
-                titlecontent: '动态标题',
+                titlecontent: '资讯标题',
                 config: {
                     //可以在此处定义工具栏的内容
                     toolbars: [
@@ -283,9 +320,9 @@
             }
             if(type){
                 if(type == 'new'){
-                    this.title = '新建动态'
+                    this.title = '新建'
                 }else if(type == 'editor'){
-                    this.title = '编辑动态'
+                    this.title = '编辑'
                 }
             }
             this.newsTime = this.timetrans('1551936730');
@@ -299,6 +336,12 @@
             $('.dialogcontent').css({"left":left,'top': top})
         },
         methods: {
+            getArticleImg(status){
+                return Filter.getArticleImg(status)
+            },
+            getArticleTitle(status){
+                return Filter.getArticleStatus(status)
+            },
             timetrans(timestamp) {//初始化时间
                 var getSeconds = '', getMinutes = '', getHours = '';
                 var d = new Date(timestamp*1000);
@@ -327,8 +370,7 @@
             },
             handleChange(file, fileList) {
             },
-            startdateChange(val){
-            },
+
             saveNews(){//保存公司动态
                 this.$router.push({name:'backnews'})
                 if(this.titlecontent.length == 0){

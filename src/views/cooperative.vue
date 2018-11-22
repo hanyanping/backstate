@@ -113,6 +113,8 @@
                                 <img class='downimg imgicon ' v-if="index==(tableData.length-1)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xiayigray.png">
                             </td>
                             <td>
+                                <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>
+                                <img @click="editorLogo('13966')" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
                                 <span class="deleteText warmtext" v-if="item.isDelete">删除</span>
                                 <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                             </td>
@@ -126,6 +128,7 @@
             </div>
             <Addbanner :source="source" v-if='showAddbanner' @clickbanner="getCooperaData"></Addbanner>
             <Deletebanner v-if='showDeletebanner' @clickbanner="getCooperaData"></Deletebanner>
+            <Editorlogo v-if='showEditorlogo' @clickbanner="getCooperaData"></Editorlogo>
         </div>
     </div>
 </template>
@@ -135,6 +138,7 @@
     import Headercontent from '../components/headercontent'
     import Addbanner from '../components/addbanner'
     import  Deletebanner from '../components/deletebanner'
+    import Editorlogo from '../components/editorlogo'
     export default {
         name: "cooperative",
         data() {
@@ -142,7 +146,7 @@
                 source: 'cooperative',
                 showDeletebanner: false,
                 showAddbanner: false,
-                showEditorbanner: false,
+                showEditorlogo: false,
                 tableData: []
             };
         },
@@ -150,6 +154,14 @@
             this.getCooperaData()
         },
         methods:{
+            enterStyletwo(item){
+                item.isEditor = true;
+                this.$forceUpdate();
+            },
+            leaveStyletwo(item){
+                item.isEditor = false;
+                this.$forceUpdate();
+            },
             enterStylethree(item){
                 item.isDelete = true;
                 this.$forceUpdate()
@@ -161,8 +173,8 @@
             addLogo(){
                 this.showAddbanner = true;
             },
-            editorBanner(){
-                this.showEditorbanner = true;
+            editorLogo(){
+                this.showEditorlogo = true;
             },
             deleteBanner(){
                 this.showDeletebanner = true;
@@ -171,10 +183,12 @@
                 if(str == 'sure'){
                     this.showAddbanner = false;
                     this.showDeletebanner = false;
+                    this.showEditorlogo = false;
                 }
                 if(str == 'cancle'){
                     this.showAddbanner = false;
                     this.showDeletebanner = false;
+                    this.showEditorlogo = false;
                 }
                 var data = [{
                     bannerurl: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/banben2.jpg',
@@ -197,6 +211,7 @@
                         state: ''
                     }];
                 for(let i in data){
+                    data[i].isEditor = false;
                     data[i].isDelete = false;
                     data[i].upicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangyi.png';
                     data[i].downicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xiayi.png';
@@ -211,7 +226,8 @@
             Aside,
             Headercontent,
             Addbanner,
-            Deletebanner
+            Deletebanner,
+            Editorlogo
         },
     }
 </script>

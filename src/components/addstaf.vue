@@ -86,7 +86,7 @@
     <div class="editorbanner">
         <div class="dialogcontent">
             <div class="bannercontent">
-                <h3 class="addtitle"><span class="addimg">添加员工</span></h3>
+                <h3 class="addtitle"><span class="addimg">{{title}}</span></h3>
                 <div class="imgContent">
                     <div class="lianjie">
                         <span class='labletext' >账号 : </span>
@@ -134,8 +134,12 @@
     import Service from '../common/service'
     export default {
         name: "addstaf",
+        props: {id: {
+                type: String
+            }} ,
         data() {
             return {
+                title: '',
                 data: [{
                     label: '一级 1',
                     children: [{
@@ -186,24 +190,28 @@
             };
         },
         created(){
-
+            this.getStaf()
         },
         watch:{
 
         },
         mounted(){
             var width = $(".editorbanner").width();
-            console.log(width)
             var left = 0.5*(width - 600);
-            console.log(left)
-
             var height = document.body.offsetHeight,
                 scrollTop = document.body.scrollTop,
                 top = 0.5*(height-scrollTop-550);
-            console.log(height,scrollTop)
             $('.dialogcontent').css({"left":left,'top': top})
         },
         methods: {
+            getStaf(){
+                console.log(this.id)
+                if(this.id){
+                   this.title = '编辑员工'
+                }else{
+                    this.title = '添加员工'
+                }
+            },
             handleNodeClick(data) {
                 console.log(data);
             },
@@ -214,9 +222,11 @@
                     type: 'error'
                 });
             },
-            sureImg(){},
+            sureImg(){
+                this.$emit('clickstaf', 'sure')
+            },
             cancleImg(){
-                this.$emit('clickbanner', 'editorphotos')
+                this.$emit('clickstaf', 'cancle')
             },
         },
     }

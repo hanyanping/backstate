@@ -353,10 +353,11 @@
                     }
                     return;
                 }
+                localStorage.removeItem('type')
 
             },
             cancleImg(){
-
+                localStorage.removeItem('type')
             },
             preview(){
                 localStorage.setItem('contentnews',JSON.stringify(this.$refs.ueditor.getUEContent()))

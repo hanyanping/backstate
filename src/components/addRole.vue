@@ -78,7 +78,7 @@
     <div class="addRole">
         <div class="dialogcontent">
             <div class="bannercontent">
-                <h3 class="addtitle"><span class="addimg">添加角色</span></h3>
+                <h3 class="addtitle"><span class="addimg">{{title}}</span></h3>
                 <div class="imgContent">
                     <div class="lianjie">
                         <span class='labletext' >角色名称 : </span>
@@ -158,7 +158,10 @@
                         label: '二级 3-2',
                         children: [{
                             label: '三级 3-2-1'
-                        }]
+                        },
+                            {
+                                label: '三级 3-2-2'
+                            }]
                     }]
                 }],
                 defaultProps: {
@@ -172,10 +175,16 @@
                 imgUrl: '',
                 radio: '1',
                 publish: '1',
+                title: '',
             };
         },
+        props:{
+            "id":{
+                type: String
+            }
+        },
         created(){
-
+            this.getRole()
         },
         watch:{
 
@@ -193,6 +202,13 @@
             $('.dialogcontent').css({"left":left,'top': top})
         },
         methods: {
+            getRole(){
+                if(this.id){
+                    this.title='编辑角色';
+                }else{
+                    this.title = '新建角色'
+                }
+            },
             handleNodeClick(data) {
                 console.log(data);
             },
@@ -203,9 +219,11 @@
                     type: 'error'
                 });
             },
-            sureImg(){},
+            sureImg(){
+                this.$emit('clickbanner', 'sure')
+            },
             cancleImg(){
-                this.$emit('clickbanner', 'editorphotos')
+                this.$emit('clickbanner', 'cancel')
             },
         },
     }

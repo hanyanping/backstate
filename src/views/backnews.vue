@@ -177,7 +177,6 @@
             leaveStyletwo(item){
                 item.isEditor = false;
                 this.$forceUpdate();
-
             },
             enterStylethree(item){
                 item.isDelete = true;

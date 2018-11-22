@@ -164,19 +164,19 @@
                         isShow: false,
                         subItems: [
                             {
-                                title: '咨询管理',
+                                title: '资讯管理',
                                 name: '健康资讯',
                                 isSubShow: true,
                                 router:'healthinquiry'
                             },
                             {
-                                title: '咨询管理',
+                                title: '资讯管理',
                                 name: '健康新闻',
                                 isSubShow: false,
                                 router:'healthnews'
                             },
                             {
-                                title: '咨询管理',
+                                title: '资讯管理',
                                 name: '健康之声',
                                 isSubShow: false,
                                 router:'healthvoice'

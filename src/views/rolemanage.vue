@@ -105,7 +105,7 @@
                                 <td>34</td>
                                 <td>
                                     <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>
-                                    <img @click='editorBanner' @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
+                                    <img @click="editorRole('3')" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
                                     <span class="deleteText warmtext" v-if="item.isDelete" >删除</span>
                                     <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                                 </td>
@@ -129,7 +129,7 @@
                     </div>
                 </div>
             </div>
-            <Addrole v-if='showAddrole' @clickbanner="getBanner"></Addrole>
+            <Addrole v-if='showAddrole' :id="id" @clickbanner="getBanner"></Addrole>
             <Deletebanner v-if='showDeletebanner' @clickbanner="getBanner"></Deletebanner>
         </div>
     </div>
@@ -144,6 +144,7 @@
         name: "home",
         data() {
             return {
+                id: '',
                 currentPage: 1,
                 showDeletebanner: false,
                 showAddrole: false,
@@ -159,7 +160,6 @@
             enterStyletwo(item){
                 item.isEditor = true;
                 this.$forceUpdate();
-                console.log(item)
             },
             leaveStyletwo(item){
                 item.isEditor = false;
@@ -183,23 +183,20 @@
             handleCurrentChange(val) {
                 console.log(`当前页: ${val}`);
             },
-            addBanner(){
-                this.showEditornews = true;
-            },
-            editorBanner(){
-                // this.showEditornews = true;
-                this.$router.push({'path':'/editornews'})
+            editorBanner(id){
+                this.id = id;
+                this.showAddrole = true;
             },
             deleteBanner(){
                 this.showDeletebanner = true;
             },
             getBanner(str){
-                if(str == 'addphotos'){
+                if(str == 'sure'){
+                    this.showAddrole = false;
+                    this.showDeletebanner = false;
                 }
-                if(str == 'editornews'){
-                    this.showEditornews = false;
-                }
-                if(str == 'deletephotos'){
+                if(str == 'cancel'){
+                    this.showAddrole = false;
                     this.showDeletebanner = false;
                 }
                 var data = [{

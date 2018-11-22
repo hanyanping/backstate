@@ -121,7 +121,7 @@
                                 <td>{{item.state}}</td>
                                 <td>
                                     <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>
-                                    <img @click='editorBanner' @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
+                                    <img @click="addStaf('3')" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
                                     <span class="deleteText warmtext" v-if="item.isDelete" >删除</span>
                                     <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                                 </td>
@@ -141,13 +141,12 @@
                         </div>
                     </div>
                     <div class="homebutton">
-                        <span class="sureButton cursor" @click="addStaf">添加员工</span>
+                        <span class="sureButton cursor" @click="addStaf('')">添加员工</span>
                     </div>
                 </div>
             </div>
-            <Addstaf v-if='showAddstaf' @clickbanner="getBanner"></Addstaf>
-
-            <Deletebanner v-if='showDeletebanner' @clickbanner="getBanner"></Deletebanner>
+            <Addstaf v-if='showAddstaf' :id="id" @clickstaf="getBanner"></Addstaf>
+            <Deletebanner v-if='showDeletebanner' @clickstaf="getBanner"></Deletebanner>
         </div>
     </div>
 </template>
@@ -161,10 +160,10 @@
         name: "home",
         data() {
             return {
+                id: '',
                 currentPage: 1,
                 showDeletebanner: false,
                 showAddstaf: false,
-                showEditornews: false,
                 tableData: [
                     ]
             };
@@ -189,7 +188,8 @@
                 item.isDelete = false;
                 this.$forceUpdate()
             },
-            addStaf(){
+            addStaf(id){
+                this.id = id;
                 this.showAddstaf = true;
             },
             handleSizeChange(val) {
@@ -198,24 +198,19 @@
             handleCurrentChange(val) {
                 console.log(`当前页: ${val}`);
             },
-            addBanner(){
-                this.showEditornews = true;
-            },
-            editorBanner(){
-                this.showEditornews = true;
-            },
             deleteBanner(){
                 this.showDeletebanner = true;
             },
             getBanner(str){
-                if(str == 'addphotos'){
-                }
-                if(str == 'editornews'){
-                    this.showEditornews = false;
-                }
-                if(str == 'deletephotos'){
+                if(str == 'sure'){
+                    this.showAddstaf = false;
                     this.showDeletebanner = false;
                 }
+                if(str == 'cancel'){
+                    this.showAddstaf = false;
+                    this.showDeletebanner = false;
+                }
+
                 var data = [{
                     phone: '134556666666',
                     name: '自己安康快乐',

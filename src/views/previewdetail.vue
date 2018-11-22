@@ -2,7 +2,7 @@
     /*************************pc specail start*************************/
     .newsDetail{
         width: 100%;
-        padding: 140px 10% 70px;
+        padding: 4px 10% 70px;
         display: flex;
         .newsContent{
             width: 75%;
