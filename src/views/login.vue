@@ -186,6 +186,7 @@
 <script>
     import patternRules from '../common/patternRules'
     import Service from '../common/service'
+    import Util from '../common/util'
     export default {
         name: "login",
         data() {
@@ -241,13 +242,12 @@
                     } else {
                         this.time = '60'
                     }
-
                     if (this.time >= 0 && this.isCode) {
                         this.time = '60';
                         return false
                     } else {
                         //调用接口
-                        Service.user().getRegcode({
+                        Service.login().smsCode({
                             phone: this.phone
                         }).then(response => {
                             clearInterval(t);       //停止计时器
@@ -283,11 +283,9 @@
                   this. open3("请输入正确验证码");
                   return false;
               } else {
-                    Service.user().reglogin({
+                    Service.login().loginSms({
                         phone: this.phone,
-                        code: parseInt(this.code),
-                        realName: this.name,
-                        shareUserId: this.shareUserId
+                        code: parseInt(this.code)
                     }).then(response => {
                         if (response.hasOwnProperty('errorCode')) {
                             if (response.errorCode == 0) {
@@ -295,6 +293,8 @@
                                     index: 0,
                                     from: 'parent'
                                 }
+                                Util.localStorageUtil.set('access_token',response.data.token);
+                                localStorage.setItem('user',JSON.stringify(response.data))
                                 localStorage.setItem('param',JSON.stringify(obj))
                                 localStorage.removeItem("childparam");
                                 this.$router.push({name: 'home'})

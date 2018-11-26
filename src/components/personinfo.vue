@@ -91,11 +91,11 @@
                 <div class="imgContent">
                     <div class="lianjie">
                         <span class='labletext' >账号 : </span>
-                       155555555555555555
+                        {{userInfo.username}}
                     </div>
                     <div class="lianjie" >
                         <span class='labletext'>员工姓名 : </span>
-                        <input type="text" placeholder="请输入员工登陆账号">
+                        <input type="text" v-model="name" placeholder="请输入员工登陆账号">
                     </div>
                     <div class="lianjie">
                         <span class='labletext'>邮箱 : </span>
@@ -104,7 +104,7 @@
                     <div class="lianjie juese">
                         <span class='labletext'>角色 :
                         </span>
-                        <span v-for="item in selectdata">{{item}}&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                        <span v-for="item in roles">{{item}}&nbsp;&nbsp;</span>
                     </div>
                     <div class="lianjie juese">
                         <span class='labletext'>权限 :
@@ -132,6 +132,7 @@
         name: "addstaf",
         data() {
             return {
+                name: '',
                 data: [{
                     label: '一级 1',
                     children: [{
@@ -173,16 +174,19 @@
                 },
                 checked: [],
                 textarea: '',
-                selectdata:  ['管理员', '运营', '市场', '超级管理员'],
+                roles:  [],
                 dialogImageUrl: '',
                 dialogVisible: false,
                 imgUrl: '',
                 radio: '1',
                 publish: '1',
+                userInfo:''
             };
         },
         created(){
-
+            this.userInfo = JSON.parse(localStorage.getItem('user'));
+            this.name = this.userInfo.name;
+            this.roles = this.userInfo.roles;
         },
         watch:{
 

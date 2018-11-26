@@ -42,6 +42,7 @@ function successState(response) {
         } else if (response.data.errorCode == 1) {
             Message.error(response.data.message);
         } else if (response.data.errorCode == 5001) {
+            window.location.href=  document.location.protocol + '//' + window.location.host + '/login'
         }
     } else {
         Message.error('网络请求错误');
@@ -49,15 +50,14 @@ function successState(response) {
 }
 
 const getResource = (opts, data) => {
-    var tokenVal = Util.localStorageUtil.get('access_token');
-    if (opts.url.indexOf('wx/jsapi/sign') >= 0 || (opts.url.indexOf('/usr/user/wechat/login') >= 0)) {
-        tokenVal = '';
+    var tokenVal;
+    if(Util.localStorageUtil.get('access_token')){
+         tokenVal = Util.localStorageUtil.get('access_token');
     }
     let  contentType = 'application/json; charset=UTF-8';
     if(opts.url.indexOf('sys/ueditor/index') >= 0){
         contentType = 'multipart/form-data'
     }
-    console.log( Global.requestUrl)
     let httpDefaultOpts = { //http默认配置
         method: opts.method,
         baseURL: Global.requestUrl,
@@ -102,12 +102,65 @@ const getResource = (opts, data) => {
 };
 
 export default {
-    login(data) {
-        // 登录
-        return getResource({
-            url: '/oauth2/token',
-            method: 'post'
-        }, data)
+    login(){
+        return {
+            smsCode(data) {
+                // 登录
+                return getResource({
+                    url: '/sys/admin/account/login/sms/code',
+                    method: 'post'
+                }, data)
+            },
+            loginSms(data) {
+                // 登录
+                return getResource({
+                    url: '/sys/admin/account/login/sms',
+                    method: 'post'
+                }, data)
+            },
+            loginOut(data) {
+                // 登录
+                return getResource({
+                    url: '/sys/admin/account/logout',
+                    method: 'post'
+                }, data)
+            }
+        }
+
+    },
+    advert(){
+        return {
+            getadverts: function (data, key) {//获取广告
+                return getResource({
+                    url: `sys/admin/advert/${key}/items`,
+                    method: 'get'
+                })
+            },
+            addadvertPhone: function (data) {
+                return getResource({
+                    url: '/sys/admin/advert/item/batch/add',
+                    method: 'post'
+                }, data)
+            },
+            deleteadvert: function (data,key) {
+                return getResource({
+                    url: `/sys/admin/advert/item/${key}`,
+                    method: 'DELETE'
+                }, data)
+            },
+            getadvert: function (data,key) {
+                return getResource({
+                    url: `/sys/admin/advert/item/${key}`,
+                    method: 'get'
+                }, data)
+            },
+            editoradvert: function (data,key) {
+                return getResource({
+                    url: `/sys/admin/advert/item/${key}`,
+                    method: 'POST'
+                }, data)
+            },
+        }
     },
     common() {
         return {

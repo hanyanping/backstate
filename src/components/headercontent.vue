@@ -31,8 +31,8 @@
                 <img src="../assets/images/logo.png">
             </div>
             <div class="rightText">
-                <span class="name cursor" @click="openPerson">yangxiaofeng@ifxj.com</span>
-                <span class="loginout"> 退出</span>
+                <span class="name cursor" @click="openPerson">{{userInfo.username}}</span>
+                <span class="loginout cursor" @click="loginOut"> 退出</span>
             </div>
         </div>
         <Personinfo v-if="isShow" @clickperson="closeinfo"></Personinfo>
@@ -41,6 +41,7 @@
 </template>
 <script>
     import  Personinfo from '../components/personinfo'
+    import Service from '../common/service'
     export default {
         name: "headercontent",
         components:{
@@ -48,7 +49,17 @@
         },
         data(){
         return{
-                isShow: false,
+            isShow: false,
+            userInfo: '',
+            }
+        },
+        created(){
+            this.userInfo = JSON.parse(localStorage.getItem('user'));
+            if(!(this.userInfo)){
+                localStorage.removeItem('param');
+                localStorage.removeItem('contentnews');
+                localStorage.removeItem('type');
+                this.$router.push({name: 'login'})
             }
         },
         methods:{
@@ -57,7 +68,19 @@
             },
             openPerson(){
                 this.isShow = true;
-            }
+            },
+            loginOut(){
+                Service.login().loginOut({
+                }).then(response => {
+                    localStorage.removeItem('user');
+                    localStorage.removeItem('param');
+                    localStorage.removeItem('contentnews');
+                    localStorage.removeItem('type');
+                    localStorage.removeItem('access_token');
+                    this.$router.push({name: 'login'})
+                }, err => {
+                });
+            },
         }
     }
 </script>

@@ -111,6 +111,12 @@
     import Service from '../common/service'
     export default {
         name: "deletebanner",
+        props:{
+            id:{
+                type: Number,
+                required: true
+            }
+        },
         data() {
             return {
                 dialogImageUrl: '',
@@ -147,7 +153,11 @@
                 });
             },
             sureImg(){//确定选中照片
-                this.$emit('clickbanner', 'sure')
+                Service.advert().deleteadvert({
+                },this.id).then(response => {
+                    this.$emit('clickbanner', 'sure')
+                }, err => {
+                });
             },
             cancleImg(){
                 this.$emit('clickbanner', 'cancle')

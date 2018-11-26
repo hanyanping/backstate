@@ -169,7 +169,7 @@
                 selectImg: [],
                 imgUrl: '',
                 file:'',
-                photos:[{'isdelete':false,'disabled':false,select:false,'url':'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bac2.png',id:'1'},{'isdelete':false,'disabled':false,'select':false,'url':'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/guanyuwomen_banner.jpg',id:'2'},{'isdelete':false,'disabled':false,'select':false,'url':'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xinwen_banner.jpg',id:'3'}]
+                photos: []
             };
         },
         created(){
@@ -238,6 +238,14 @@
                 }
             },
             select(item){//选择图片
+                item.select = !item.select;
+                if(item.select){
+                    this.selectImg.push(item.url)
+                }else{
+                    var index = this.selectImg.indexOf(item.url)
+                    this.selectImg.splice(index, 1);
+                }
+                return;
                 if(this.selectImg.length>=2){//超过选择的数量，不可选择
                     if(this.selectImg.indexOf(item.url)>-1){
                         item.select = !item.select;
@@ -267,14 +275,37 @@
                         var index = this.selectImg.indexOf(item.url)
                         this.selectImg.splice(index, 1);
                     }
+
                 }
             },
             sureImg(){//确定选中照片
-                console.log(33333)
-                this.$emit('clickbanner', 'sure')
+                console.log(this.selectImg)
+                if(this.selectImg.length == 0){
+                    this.$message.error('请选择图片!');
+                    return;
+                }
+                var objArr = [];
+                for(var i = 0;i<this.selectImg.length;i++){
+                    var obj = {};
+                    obj.advertId = 1;
+                    obj.beginTime = '';
+                    obj.content = '';
+                    obj.endTime = '';
+                    obj.imageUrl = this.selectImg[i];
+                    obj.remark = '';
+                    obj.sort = '';
+                    obj.title = '';
+                    objArr.push(obj)
+                }
+                console.log(objArr)
+                if(objArr.length!=0){
+                    Service.advert().addadvertPhone(objArr).then(response => {
+                        this.$emit('clickbanner', 'sure')
+                    }, err => {
+                    });
+                }
             },
             sureLogo(){//合作伙伴
-                console.log(44444)
                 this.$emit('clickbanner', 'sure')
             },
             cancleImg(){

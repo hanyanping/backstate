@@ -82,9 +82,9 @@
                 <h3 class="addtitle"><span class="addimg">编辑横幅</span></h3>
                 <div class="imgContent">
                     <div class="block">
-                        <el-carousel :autoplay='false'  @change='changeBanner' arrow="always" indicator-position="none" trigger="click" height="174px" ref="carousel">
-                            <el-carousel-item  v-for="item in photos" :key="item.id">
-                                <div  class="back"  :style="{backgroundImage: 'url(' + item.url + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}">
+                        <el-carousel :autoplay='false'  :initial-index='indexnum' @change='changeBanner' arrow="always" indicator-position="none" trigger="click" height="174px" ref="carousel">
+                            <el-carousel-item  v-for="item in photos" :key="item.id" >
+                                <div  class="back"  :style="{backgroundImage: 'url(' + item.imageUrl + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}">
                                 </div>
                             </el-carousel-item>
                         </el-carousel>
@@ -100,7 +100,7 @@
                                 type="textarea"
                                 :rows="3"
                                 placeholder="请输入内容"
-                                v-model="textarea">
+                                v-model="href">
                         </el-input>
                     </div>
                     <div class="lianjie">
@@ -108,10 +108,9 @@
                         <el-radio v-model="publish" label="2">定时发布</el-radio>
 
                     </div>
-                    <div class="dateTime lianjie" v-if="publish==1">
+                    <div class="dateTime lianjie" v-if="publish==2">
                         <span style="padding-right: 5px;">开始时间 : </span>
                         <el-date-picker
-                                :picker-options="expireTimeOption"
                                 @change="startdateChange"
                                 v-model="startTime"
                                 type="datetime"
@@ -126,8 +125,15 @@
                     </div>
                     <div class="dateTime lianjie" v-if="stoppublish==2">
                         <span style="padding-right: 5px;">结束时间 : </span>
+                        <!--<el-date-picker-->
+                                <!--:picker-options="expireTimeOption"-->
+                                <!--@change="enddateChange"-->
+                                <!--v-model="endTime"-->
+                                <!--type="datetime"-->
+                                <!--placeholder="选择结束时间"-->
+                                <!--default-time="12:00:00">-->
+                        <!--</el-date-picker>-->
                         <el-date-picker
-                                :picker-options="expireTimeOption"
                                 @change="enddateChange"
                                 v-model="endTime"
                                 type="datetime"
@@ -152,8 +158,14 @@
     import Service from '../common/service'
     export default {
         name: "editorbanner",
+        props:{
+            id:{
+                type: Number
+            }
+        },
         data() {
             return {
+                indexnum: 1,
                 stoppublish: '1',
                 expireTimeOption: {
                     disabledDate(date) {
@@ -163,26 +175,26 @@
                 startDatePicker: this.beginDate(),
                 startTime: '',
                 endTime: '',
-                textarea: '',
+                href: '',
                 dialogImageUrl: '',
                 dialogVisible: false,
-                imgUrl: '',
+                imageUrl: '',
                 radio: '1',
                 publish: '1',
-                photos:[{'isdelete':false,'disabled':false,select:false,'url':'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bac2.png',id:'1'},{'isdelete':false,'disabled':false,'select':false,'url':'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/guanyuwomen_banner.jpg',id:'2'},{'isdelete':false,'disabled':false,'select':false,'url':'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xinwen_banner.jpg',id:'3'}]
+                photos:[]
             };
         },
         created(){
             // this.getphotoList()
-            this.startTime = new Date(this.timetrans('1551936730'))
-            console.log( this.startTime)
+            // this.startTime = new Date(this.timetrans('1551936730'))
+            // console.log( this.startTime)
+            this.getBanner()
+
         },
         watch:{
             'radio'(){
-                console.log(this.radio)
             },
             'publish'(){
-                console.log(this.publish)
             },
             'startTime'(){
                 this.compare()
@@ -199,10 +211,65 @@
                 top = 0.5*(height-scrollTop-550);
             $('.dialogcontent').css({"left":left,'top': top})
         },
+
         methods: {
+            setActiveItem(index){
+                console.log(index)
+                this.changeBanner(index)
+                this.indexnum = Number(index);
+
+            },
+            getBanner(){
+                var id = 1;
+                Service.advert().getadverts({
+                },id).then(response => {
+                    if(response.data.length == 0){
+                    }else{
+                        console.log(response.data)
+                        this.photos = response.data;
+                        console.log(this.photos)
+                        this.getAdvers()
+                    }
+                }, err => {
+                });
+            },
+            getAdvers(){
+                if(this.id){
+                    Service.advert().getadvert({
+                    },this.id).then(response => {
+                        this.imageUrl = response.data.imageUrl;
+                        for(var i=0;i<this.photos.length;i++){
+                            if(this.photos[i].imageUrl == this.imageUrl){
+                                // this.indexnum = Number(i);
+                                this.setActiveItem(i)
+
+                            }
+                        }
+                        if(!response.data.href){
+                            this.radio = "1";
+                        }else{
+                            this.radio = "2" ;
+                            this.href = response.data.href;
+                        }
+                        if(response.data.beginTime){
+                            this.publish = "2";
+                            this.startTime = new Date(this.timetrans(response.data.beginTime))
+                        }else{
+                            this.publish = "1"
+                        }
+                        if(response.data.endTime){
+                            this.stoppublish = "2";
+                            this.endTime = new Date(this.timetrans(response.data.endTime))
+                        }else{
+                            this.stoppublish = "1"
+                        }
+                    }, err => {
+                    });
+                }
+            },
             timetrans(timestamp) {
                 var getSeconds = '', getMinutes = '', getHours = '';
-                var d = new Date(timestamp*1000);
+                var d = new Date(timestamp);
                 getHours = d.getHours() < 10 ? '0' + d.getHours() : d.getHours();
                 getMinutes = d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes()
                 getSeconds = d.getSeconds() < 10 ? '0' + d.getSeconds() : d.getSeconds()
@@ -256,28 +323,27 @@
                     type: 'error'
                 });
             },
-            sureImg(){//确定选中照片
-                this.$emit('clickbanner', 'sure')
+            sureImg(){//确定
                 console.log(this.$refs.carousel.activeIndex)
-                if(this.radio == 2){
-                    if(this.textarea == ''){
+                if(this.radio == "2"){
+                    if(this.href == ''){
                         this.open8('请输入自定义链接');
                         return;
                     }
                 }
-                if(this.publish == 2){
+                if(this.publish == "2"){
                     if(this.startTime == '' || this.startTime === null){
                         this.open8('请选择开始时间');
                         return;
                     }
                 }
-                if(this.stoppublish == 2){
+                if(this.stoppublish == "2"){
                     if(this.endTime == '' || this.endTime === null){
                         this.open8('请选择结束时间');
                         return;
                     }
                 }
-                if(this.stoppublish == 2 && this.publish == 2){
+                if(this.stoppublish == "2" && this.publish == "2"){
                     if(this.startTime !='' || this.startTime === null){
                         if(this.endTime !=''|| this.endTime === null){
                             if(this.startTime>this.endTime){
@@ -290,6 +356,39 @@
                         }
                     }
                 }
+                if(this.publish == "1"){
+                    this.startTime = '';
+                }
+                if(this.stoppublish == "1"){
+                    this.endTime = '';
+                }
+                if(this.radio == "1"){
+                    this.href = '';
+                }
+                if(this.startTime){
+                    this.startTime = this.startTime.getTime();
+                }else{
+                    this.startTime = '';
+                }
+                if(this.endTime){
+                    this.endTime = this.endTime.getTime();
+                }else{
+                    this.endTime = ''
+                }
+                Service.advert().editoradvert({
+                    "advertId": 1,
+                    "beginTime": this.startTime,
+                    "content": "string",
+                    "endTime": this.endTime,
+                    "href": this.href,
+                    "imageUrl": this.imageUrl,
+                    "remark": "",
+                    "sort": "",
+                    "title": ""
+                },this.id).then(response => {
+                    this.$emit('clickbanner', 'sure')
+                }, err => {
+                });
             },
             cancleImg(){
                 this.$emit('clickbanner', 'cancle')
