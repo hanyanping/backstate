@@ -175,7 +175,7 @@
                         <input class='code' v-model='code' type="text" placeholder="请输入验证码">
                         <div class="codeText"><span class="codeSpan cursor" @click="getCodes($event)" :class="{active: isCode}">{{getCode}}</span></div>
                     </div>
-                    <div class="loginButton cursor" @click="submit">登录</div>
+                    <div class="loginButton cursor" id='submit_btn' @click="submit">登录</div>
                 </div>
             </div>
 
@@ -197,6 +197,17 @@
                 getCode: "获取验证码",
                 time: 60,
             };
+        },
+        mounted(){
+            var that = this;
+            document.onkeydown = function (e) {
+            if (!e) e = window.event;
+            if ((e.keyCode || e.which) == 13) {
+                var obtnLogin = document.getElementById("submit_btn");  //submit_btn为按钮ID
+                obtnLogin.focus();　　
+                that.submit()　　;//提交按钮触发的方法
+            }
+        }
         },
         methods:{
             vertifyPhone(){

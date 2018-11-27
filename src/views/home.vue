@@ -34,12 +34,23 @@
                         text-align: center;
                     }
                     td:first-child{
+                        width: 370px;
                         .back{
                             height: 174px;
                             min-width: 300px;
                             max-width: 300px;
                             background-size: cover;
                             margin: 0 auto;
+                            position: relative;
+                            .selectIcon{
+                                display: inline-block;
+                                width: 25px;
+                                height: 25px;
+                                vertical-align: middle;
+                                padding-top: 75px;
+                                position: absolute;
+                                left: -35px;
+                            }
                         }
                     }
                     td:nth-of-type(2){
@@ -115,16 +126,19 @@
                             <th>操作</th>
                         </tr>
                         <tr v-for="(item,index) in tableData">
-                            <td>
-
-                                <div class='back' :style="{backgroundImage: 'url(' + item.imageUrl + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}"></div>
+                            <td class="flex">
+                                <div class='back' :style="{backgroundImage: 'url(' + item.imageUrl + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}">
+                                    <img class='selectIcon' v-if='item.isSelect == 0' src="../assets/images/disabled.png">
+                                    <img class='selectIcon' @click="selectAdver(item)" v-if='item.isSelect == 1' src="../assets/images/select.png">
+                                    <img class='selectIcon' @click="selectAdver(item)" v-if='item.isSelect == 2' src="../assets/images/hasSelect.png">
+                                </div>
                             </td>
                             <td v-if="item.href">{{item.href}}</td>
                             <td v-if="!item.href">暂无</td>
                             <td>
-                                <img class="upimg imgicon cursor" v-if="index!=0" :src="item.upicon">
-                                <img class="upimg imgicon " v-if="index==0" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangyigray.png">
-                                <img class='downimg imgicon cursor' v-if="index!=(tableData.length-1)" :src="item.downicon">
+                                <img class="upimg imgicon cursor" v-if="index!=0" @click='upSort(index)' :src="item.upicon">
+                                <img class="upimg imgicon "  v-if="index==0" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangyigray.png">
+                                <img class='downimg imgicon cursor' @click='downSort(index)' v-if="index!=(tableData.length-1)" :src="item.downicon">
                                 <img class='downimg imgicon ' v-if="index==(tableData.length-1)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xiayigray.png">
                             </td>
                             <td v-if="item.status == 0 &&item.beginTime == null">已发布</td>
@@ -133,24 +147,24 @@
                             <td>
                                 <img class="publishimg imgicon"  v-if="item.state=='已发布'" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/fabugrey.png"/>
                                 <span class=" warmtext" v-if="item.ispublish">发布</span>
-                                <img class="publishimg imgicon cursor" @mouseenter="enterStyleone(item)" @mouseleave='leaveStyleone(item)' v-if="item.state!=='已发布'" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/jinlingyingcaiwangtubiao97.png">
+                                <img class="publishimg imgicon cursor" @mouseenter="enterStyleone(item)" @mouseleave='leaveStyleone(item)' @click='itemPublish(item)' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/jinlingyingcaiwangtubiao97.png">
                                 <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>
                                 <img @click='editorBanner(item.id)' @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
                                 <span class="deleteText warmtext" v-if="item.isDelete" style="margin-left: -6px;">删除</span>
-                                <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner(item.id)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
+                                <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner(item.id,item.imageUrl)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                             </td>
                         </tr>
                     </table>
                     <div v-if="!noData" class="noData">暂无数据</div>
                     <div class="homebutton">
                         <span class="sureButton cursor" @click="addBanner">添加横幅</span>
-                        <span class="cancleButton cursor"  >批量发布</span>
+                        <span class="cancleButton cursor"  @click="allPublish">批量发布</span>
                     </div>
                 </div>
             </div>
             <Addbanner v-if='showAddbanner' :source="source" @clickbanner="getBanner"></Addbanner>
             <Editorbanner v-if='showEditorbanner' :id="id" @clickbanner="getBanner"></Editorbanner>
-            <Deletebanner v-if='showDeletebanner' :id="id" @clickbanner="getBanner"></Deletebanner>
+            <Deletebanner v-if='showDeletebanner' :id="id" :source='deleteSource' :imageUrl="imageUrl" @clickbanner="getBanner"></Deletebanner>
         </div>
     </div>
 </template>
@@ -166,7 +180,9 @@
         name: "home",
         data() {
             return {
+                imageUrl:'',
                 source: '',
+                deleteSource: 'banner',
                 showDeletebanner: false,
                 showAddbanner: false,
                 showEditorbanner: false,
@@ -174,7 +190,13 @@
                 permissions: [],
                 userInfo: '',
                 noData: false,
-                id: ''
+                id: '',
+                publishObj: {
+                    beginTime:'',
+                    endTime:'',
+                    ids: []
+                },
+                changeData:[],
             };
         },
         created(){
@@ -182,12 +204,82 @@
             if(this.userInfo){
                 this.permissions = this.userInfo.permissions;
             }
-            this.getBanner();//获取首页横幅表个数据
+            this.getBannerData();//获取首页横幅表个数据
         },
         mounted(){
 
         },
         methods:{
+            upSort(index){
+                var temp = this.tableData[index-1];
+                var data = this.tableData;
+                data[index-1] = this.tableData[index];
+                data[index] = temp;
+                for(var i = 0;i<data.length;i++){
+                    var obj = {
+                        id: data[i].id,
+                        sort: i
+                    }
+                    this.changeData.push(obj)
+                }
+                this.itemSort()
+            },
+            downSort(index){
+                var temp = this.tableData[index+1];
+                var data = this.tableData;
+                data[index+1] = this.tableData[index];
+                data[index] = temp;
+                for(var i = 0;i<data.length;i++){
+                    var obj = {
+                        id: data[i].id,
+                        sort: i
+                    }
+                    this.changeData.push(obj)
+                }
+                this.itemSort()
+            },
+            itemSort(){
+                Service.advert().itemSort(this.changeData).then(response => {
+                    this.changeData = [];
+                    this.getBannerData()
+                }, err => {
+                });
+            },
+            itemPublish(item){
+                this.publishObj.ids.push(item.id);
+                this.publishObj.beginTime = item.beginTime;
+                this.publishObj.endTime = item.endTime;
+                this.allPublish();
+            },
+            allPublish(){
+                if(this.publishObj.ids.length==0){
+                    this.$message.warning('请选择发布横幅');
+                    return;
+                }
+                Service.advert().itemPublish(this.publishObj).then(response => {
+                    this.getBanner();
+                    this.publishObj = {
+                        beginTime:'',
+                        endTime:'',
+                        ids: []
+                    }
+                    this.$message.success('发布成功');
+
+                }, err => {
+                });
+            },
+            selectAdver(item){
+                if(item.isSelect == "1"){
+                    item.isSelect = "2"//选中
+                    this.$forceUpdate()
+                    this.publishObj.ids.push(item.id)
+                }else{
+                    item.isSelect = "1"//取消选中
+                    this.$forceUpdate()
+                    var index =  this.publishObj.ids.indexOf(item.id)
+                    this.publishObj.ids.splice(index, 1);
+                }
+            },
             timetrans(timestamp) {
                 var getSeconds = '', getMinutes = '', getHours = '';
                 var d = new Date(timestamp);
@@ -195,7 +287,6 @@
                 getMinutes = d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes()
                 getSeconds = d.getSeconds() < 10 ? '0' + d.getSeconds() : d.getSeconds()
                 var newTime = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() + ' ' + getHours + ':' + getMinutes + ':' + getSeconds;
-                console.log(newTime)
                 return newTime
             },
             enterStyleone(item){
@@ -213,7 +304,6 @@
             leaveStyletwo(item){
                 item.isEditor = false;
                 this.$forceUpdate();
-
             },
             enterStylethree(item){
                 item.isDelete = true;
@@ -250,8 +340,9 @@
                     this.$message.error('您暂无次权限')
                 }
            },
-            deleteBanner(id){
+            deleteBanner(id,imageUrl){
                 this.id = id;
+                this.imageUrl = imageUrl;
                 var num = this.judgeArr(this.permissions,'advert:item:delete')
                 if(num<this.permissions.length){
                     this.showDeletebanner = true;
@@ -269,6 +360,11 @@
                         this.noData = true;
                         for(let i in response.data){
                             response.data[i].ispublish = false;
+                            if(response.data[i].beginTime){
+                                response.data[i].isSelect = '0';
+                            }else{
+                                response.data[i].isSelect = '1';
+                            }
                             response.data[i].isEditor = false;
                             response.data[i].isDelete = false;
                             response.data[i].upicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangyi.png';
@@ -283,6 +379,7 @@
             },
             getBanner(str){
                 if(str == 'sure'){//添加banner,点击确定按钮刷新列表，关闭弹框
+                    this.getBannerData();
                     this.showAddbanner = false;
                     this.showEditorbanner = false;
                     this.showDeletebanner = false;
@@ -292,7 +389,7 @@
                     this.showEditorbanner = false;
                     this.showDeletebanner = false;
                 }
-                this.getBannerData();
+
             }
         },
         components:{

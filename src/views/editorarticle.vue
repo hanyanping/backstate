@@ -249,7 +249,7 @@
                                 <!--<el-radio v-model="jumplink" label="2">链接正文</el-radio>-->
                             <!--</div>-->
                             <div class="wangEditor">
-                                <UEditor :setid=id :config=config ref="ueditor"></UEditor>
+                                <UEditor :setid=id :config=config :source=source ref="ueditor"></UEditor>
                             </div>
                         </div>
                     </div>
@@ -279,6 +279,7 @@
                 {value: '4',label: '运动'},{value: '5',label: '美丽'},{value: '6',label: '家庭'},{value: '7',label: '育儿'}
                 ,{value: '',label: '健康'}],
                 id: '',
+                source: 'article',
                 textarea: '资讯摘要',
                 newsTime: '文章发表时间',
                 dialogImageUrl: '',

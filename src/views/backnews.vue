@@ -14,6 +14,10 @@
                 background: #fff;
                 width: 100%;
                 margin-top: 15px;
+                .noData{
+                    text-align: center;
+                    padding-top: 30px;
+                }
                 .tableBox{
                     padding-bottom: 20px;
                     border-bottom: 1px solid #eee;
@@ -105,7 +109,7 @@
             <div class="contanternews">
                 <div class="hometitle">公司动态</div>
                 <div class="bannerTable">
-                    <div class="tableBox">
+                    <div v-if="noData" class="tableBox">
                         <table class="table">
                             <tr>
                                 <th>封面图</th>
@@ -115,15 +119,15 @@
                             </tr>
                             <tr v-for="(item,index) in tableData">
                                 <td>
-                                    <div class='back' :style="{backgroundImage: 'url(' + item.bannerurl + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}"></div>
+                                    <div class='back' :style="{backgroundImage: 'url(' + item.imageUrl + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}"></div>
                                 </td>
-                                <td>{{item.url}}</td>
-                                <td>{{item.state}}</td>
+                                <td>{{item.title}}</td>
+                                <td>{{timetrans(item.time)}}</td>
                                 <td>
                                     <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>
-                                    <img @click="editorBanner('editor','13966')" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
+                                    <img @click="editorNews('editor',item.id)" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
                                     <span class="deleteText warmtext" v-if="item.isDelete" style="margin-left: -6px;">删除</span>
-                                    <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
+                                    <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteNews(item.id,item.imageUrl)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                                 </td>
 
                             </tr>
@@ -132,20 +136,21 @@
                             <el-pagination
                                     @size-change="handleSizeChange"
                                     @current-change="handleCurrentChange"
-                                    :current-page.sync="currentPage"
+                                    :current-page.sync="page"
                                     :page-size="100"
-                                    :page-sizes="[4]"
-                                    layout="total,sizes, prev, pager, next"
-                                    :total="1000">
+                                    :page-sizes="[5,10,20]"
+                                    layout="total, sizes, prev, pager, next, jumper"
+                                    :total="total">
                             </el-pagination>
                         </div>
                     </div>
+                    <div v-if="!noData" class="noData">暂无数据</div>
                     <div class="homebutton">
-                        <span class="sureButton cursor" @click="editorBanner('new','')">新建动态</span>
+                        <span class="sureButton cursor" @click="editorNews('new','')">新建动态</span>
                     </div>
                 </div>
             </div>
-            <Deletebanner v-if='showDeletebanner' @clickbanner="getNews"></Deletebanner>
+            <Deletebanner v-if='showDeletebanner' :id="id" :source='source' :imageUrl='imageUrl' @clickbanner="getNews"></Deletebanner>
         </div>
     </div>
 </template>
@@ -155,21 +160,43 @@
     import Headercontent from '../components/headercontent'
     import Addbanner from '../components/addbanner'
     import  Deletebanner from '../components/deletebanner'
+    import Service from '../common/service'
     export default {
         name: "home",
         data() {
             return {
-                currentPage: 1,
+                noData: false,
+                imageUrl:'',
+                id: '',
+                source: 'news',
                 showDeletebanner: false,
                 showAddbanner: false,
                 showEditornews: false,
-                tableData: []
+                tableData: [],
+                page: 1,
+                size: 10,
+                total: 1,
+                userInfo:'',
+                permissions: [],
             };
         },
         created(){
-            this.getNews();
+            this.getNewData();
+            this.userInfo = JSON.parse(localStorage.getItem('user'));
+            if(this.userInfo){
+                this.permissions = this.userInfo.permissions;
+            }
         },
         methods:{
+            timetrans(timestamp) {
+                var getSeconds = '', getMinutes = '', getHours = '';
+                var d = new Date(timestamp);
+                getHours = d.getHours() < 10 ? '0' + d.getHours() : d.getHours();
+                getMinutes = d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes()
+                getSeconds = d.getSeconds() < 10 ? '0' + d.getSeconds() : d.getSeconds()
+                var newTime = d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() +'日';
+                return newTime
+            },
             enterStyletwo(item){
                 item.isEditor = true;
                 this.$forceUpdate();
@@ -188,58 +215,81 @@
             },
             handleSizeChange(val) {
                 console.log(`每页 ${val} 条`);
+                this.size = val;
+                this.getNewData();
             },
             handleCurrentChange(val) {
                 console.log(`当前页: ${val}`);
+                this.page = val;
+                this.getNewData();
             },
             addBanner(){
                 this.showEditornews = true;
             },
-            editorBanner(type,id){
-                // this.showEditornews = true;
-                localStorage.setItem('type', type)
-                this.$router.push({'name':'editornews',query:{id: id}})
+            judgeArr(arr,value){
+                var num = 0;
+                for(var i=0;i<arr.length;i++){
+                    if(arr[i] == value){
+                    }else{
+                        num++;
+                    }
+                }
+                return num
             },
-            deleteBanner(){
-                this.showDeletebanner = true;
+            editorNews(type,id){
+                var num = this.judgeArr(this.permissions,'news:edit')
+                if(num<this.permissions.length){
+                    localStorage.setItem('type', type)
+                    this.$router.push({'name':'editornews',query:{id: id}})
+                }else{
+                    this.$message.error('您暂无次权限')
+                }
+            },
+            deleteNews(id,imageUrl){
+                var num = this.judgeArr(this.permissions,'news:delete')
+                if(num<this.permissions.length){
+                    this.id = id;
+                    this.imageUrl = imageUrl;
+                    this.showDeletebanner = true;
+                }else{
+                    this.$message.error('您暂无次权限')
+                }
+
+            },
+            getNewData(){
+                Service.news().getNews({page:this.page,size: this.size}).then(response => {
+                    if(response.data.records.length!=0){
+                        this.noData = true;
+                        for(let i in response.data.records){
+                            response.data.records[i].ispublish = false;
+                            response.data.records[i].isEditor = false;
+                            response.data.records[i].isDelete = false;
+                            response.data.records[i].upicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangyi.png';
+                            response.data.records[i].downicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xiayi.png';
+                        }
+                        this.total = response.data.total;
+                        this.$nextTick(()=>{
+                            this.tableData =  response.data.records;
+                        })
+                    }else{
+                        this.noData = false;
+                    }
+
+                }, err => {
+                });
             },
             getNews(str){
-                if(str == 'sureNews'){
+                if(str == 'sure'){
+                    this.showAddbanner = false;
+                    this.showEditornews = false;
+                    this.showDeletebanner = false;
+                    this.getNewData()
+                }
+                if(str == 'cancle'){
                     this.showAddbanner = false;
                     this.showEditornews = false;
                     this.showDeletebanner = false;
                 }
-                if(str == 'cancleNews'){
-                    this.showAddbanner = false;
-                    this.showEditornews = false;
-                    this.showDeletebanner = false;
-                }
-                var data = [{
-                    bannerurl: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/banben2.jpg',
-                    url: '',
-                    state: '2018年10月20日15点30分'
-                },
-                    {
-                        bannerurl: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/banben2.jpg',
-                        url: '',
-                        state: '已发布'
-                    },
-                    {
-                        bannerurl: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/banben2.jpg',
-                        url: '',
-                        state: '2018年10月20日15点30分'
-                    }];
-
-                for(let i in data){
-                    data[i].ispublish = false;
-                    data[i].isEditor = false;
-                    data[i].isDelete = false;
-                    data[i].upicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangyi.png';
-                    data[i].downicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xiayi.png';
-                }
-                this.$nextTick(()=>{
-                    this.tableData = data;
-                })
             }
         },
         components:{

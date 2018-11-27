@@ -14,11 +14,14 @@
     name: "UEditor",
     props: {
         setid: {
-          type: String
+          type: Number
       },
       config: {
           type: Object
-      }
+      },
+        source:{
+            type: String
+        }
     },
     data() {
       return {
@@ -43,6 +46,26 @@
       this.editor.destory();
     },
     methods:{
+        dealDetail(data){
+            if(data.content){
+                this.contentData = data;
+                this.$nextTick(()=>{
+                    var img = $('.articleContent ').find('img')
+                    for(var i = 0;i < img.length;i ++){
+                        if($(img[i]).width()>window.screen.width){
+                            $(img[i]).css("cssText", "width:100% !important;box-sizing:border-box !important;word-wrap: break-word !important;")
+                        }else{
+                            $(img[i]).css({'max-width': '100%','height': 'auto'})
+                        }
+                    }
+                    var ue = UE.getEditor('editor');
+                    var that = this;
+                    ue.ready(function() {
+                        ue.setContent(that.contentData.content);
+                    });
+                })
+            }
+        },
         getarticle(){
             console.log(this.setid)
             if(this.setid == ''){
@@ -52,28 +75,22 @@
                 });
                 return;
             }
-            Service.sys().getarticleDetail({},this.setid).then(response => {
-                if(response.data != null){
-                    this.contentData = response.data;
-                    // this.contentData.createDate = this.timetrans(new Date(parseInt(this.contentData.createDate)));
-                    this.$nextTick(()=>{
-                        var img = $('.articleContent ').find('img')
-                        for(var i = 0;i < img.length;i ++){
-                            if($(img[i]).width()>window.screen.width){
-                                $(img[i]).css("cssText", "width:100% !important;box-sizing:border-box !important;word-wrap: break-word !important;")
-                            }else{
-                                $(img[i]).css({'max-width': '100%','height': 'auto'})
-                            }
-                        }
-                        var ue = UE.getEditor('editor');
-                        var that = this;
-                        ue.ready(function() {
-                            ue.setContent(that.contentData.content);
-                        });
-                    })
-                }
-            }, err => {
-            });
+            if(this.source == 'news'){
+                Service.news().getNewsDetail({},this.setid).then(response => {
+                    if(response.data != null){
+                        this.dealDetail(response.data)
+                    }
+                }, err => {
+                });
+            }else{
+                Service.sys().getarticleDetail({},this.setid).then(response => {
+                    if(response.data != null){
+                        this.dealDetail(response.data)
+                    }
+                }, err => {
+                });
+            }
+
         },
       getUEContent: function(){
        return this.editor.getContent();

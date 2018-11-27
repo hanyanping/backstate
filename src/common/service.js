@@ -160,6 +160,58 @@ export default {
                     method: 'POST'
                 }, data)
             },
+            itemPublish: function (data,key) {
+                return getResource({
+                    url: `sys/admin/advert/item/publish`,
+                    method: 'POST'
+                }, data)
+            },
+            itemSort: function (data,key) {
+                return getResource({
+                    url: `sys/admin/advert/item/sort`,
+                    method: 'POST'
+                }, data)
+            },
+        }
+    },
+    news(){
+        return {
+            getadverts: function (data, key) {//获取广告
+                return getResource({
+                    url: `sys/admin/advert/${key}/items`,
+                    method: 'get'
+                })
+            },
+            addNews: function (data) {
+                return getResource({
+                    url: '/sys/admin/news',
+                    method: 'post'
+                }, data)
+            },
+            getNews: function (data) {
+                return getResource({
+                    url: '/sys/admin/news',
+                    method: 'get'
+                }, data)
+            },
+            getNewsDetail: function (data,key) {
+                return getResource({
+                    url: `/sys/admin/news/${key}`,
+                    method: 'get'
+                }, data)
+            },
+            editorNews:function (data,key) {
+                return getResource({
+                    url: `/sys/admin/news/${key}`,
+                    method: 'post'
+                }, data)
+            },
+            deleteNews: function (data,key) {
+                return getResource({
+                    url: `/sys/admin/news/${key}`,
+                    method: 'DELETE'
+                }, data)
+            },
         }
     },
     common() {

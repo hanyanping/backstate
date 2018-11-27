@@ -8,7 +8,7 @@
         /*background: rgba(0,0,0,0.2);*/
         .dialogcontent{
             position: relative;
-            height: 450px;
+            height: 400px;
             background: #fff;
             width: 600px;
             overflow: hidden;
@@ -30,7 +30,7 @@
                         width: 314px;
                         margin: 10px auto;
                         .isdelete{
-                            margin: 10px 0;
+                            margin: 15px 0;
                             font-size: 12px;
                             color: #0abf9b;
                         }
@@ -85,14 +85,14 @@
                 <div class="imgContent">
                     <div class="block">
                         <div class="isdelete">是否确定删除？</div>
-                        <div  class="back"  @click="setActiveItem(index)" :style="{backgroundImage: 'url(' + imgUrl + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}">
+                        <div  class="back"  @click="setActiveItem(index)" :style="{backgroundImage: 'url(' + imageUrl + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}">
                         </div>
                     </div>
-                    <div class="lianjie">
-                        <span style="padding-right: 5px;">跳转方式 : </span>
-                    </div>
-                    <div class="linkbox">
-                        <span style="padding-right: 5px;display: inline-block;width: 95px;">链接地址 : </span>
+                    <!--<div class="lianjie" v-if="source=='banner'">-->
+                        <!--<span style="padding-right: 5px;">跳转方式 : </span>-->
+                    <!--</div>-->
+                    <div class="linkbox" v-if="source=='banner'">
+                        <span style="padding-right: 5px;display: inline-block;width: 95px;">链接地址 : </span>{{href}}
                     </div>
                 </div>
                 <div class="button">
@@ -115,13 +115,20 @@
             id:{
                 type: Number,
                 required: true
+            },
+            source:{
+                type: String
+            },
+            imageUrl:{
+                type: String
             }
         },
         data() {
             return {
+
                 dialogImageUrl: '',
                 dialogVisible: false,
-                imgUrl: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bac2.png',
+                href:''
             };
         },
         created(){
@@ -134,8 +141,23 @@
                 scrollTop = document.body.scrollTop,
                 top = 0.5*(height-scrollTop-450);
             $('.dialogcontent').css({"left":left,'top': top})
+            this.getDetail()
         },
         methods: {
+
+            getDetail(){
+                if(this.source == 'banner'){
+                    Service.advert().getadvert({
+                    },this.id).then(response => {
+                        if(response.data.href){
+                            this.href = response.data.href
+                        }else{
+                            this.href = '暂无'
+                        }
+                    }, err => {
+                    });
+                }
+            },
             timetrans(timestamp) {
                 var getSeconds = '', getMinutes = '', getHours = '';
                 var d = new Date(timestamp*1000);
@@ -153,11 +175,20 @@
                 });
             },
             sureImg(){//确定选中照片
-                Service.advert().deleteadvert({
-                },this.id).then(response => {
-                    this.$emit('clickbanner', 'sure')
-                }, err => {
-                });
+                if(this.source == 'news'){
+                    Service.news().deleteNews({
+                    },this.id).then(response => {
+                        this.$emit('clickbanner', 'sure')
+                    }, err => {
+                    });
+                }
+                if(this.source == 'banner'){
+                    Service.advert().deleteadvert({
+                    },this.id).then(response => {
+                        this.$emit('clickbanner', 'sure')
+                    }, err => {
+                    });
+                }
             },
             cancleImg(){
                 this.$emit('clickbanner', 'cancle')

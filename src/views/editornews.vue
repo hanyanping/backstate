@@ -162,23 +162,23 @@
                                 <div class="textBac" v-if='imageUrl' :style="{backgroundImage: 'url(' + imageUrl + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}"></div>
                                  <div class="newsTime">{{newsTime}}</div>
                                 <h3 class="title">{{titlecontent}}</h3>
-                                <p class="lead">{{textarea}}</p>
+                                <p class="lead">{{summary}}</p>
                             </div>
                         </div>
                         <div class="contentRight">
                             <div class="inputText">
-                                <span class="demonstration">标题 :</span><input class='newsTitle' placeholder="请输入标题" v-model='titlecontent' type="text">
+                                <span class="demonstration">标题 :</span><input class='newsTitle' @keyup="changetitlecontent" placeholder="请输入标题" v-model='titlecontent' type="text">
                             </div>
                             <div class="inputText">
                                 <div class="block">
                                     <span class="demonstration" style="margin-right: 5px;">动态时间 :</span>
                                     <el-date-picker
                                             @change="startdateChange"
-                                            v-model="newsTime"
                                             type="date"
+                                            v-model="newsTime"
                                             placeholder="选择日期"
                                             format="yyyy 年 MM 月 dd 日"
-                                            value-format="yyyy-MM-dd">
+                                            value-format="yyyy年MM月dd日">
                                     </el-date-picker>
                                 </div>
                             </div>
@@ -206,7 +206,7 @@
                                         type="textarea"
                                         :rows="3"
                                         placeholder="请输入内容"
-                                        v-model="textarea">
+                                        v-model="summary" @keyup.native="changeSummary">
                                 </el-input>
                             </div>
                             <div class="inputText" style="display: flex;">
@@ -214,8 +214,8 @@
                                 <el-radio v-model="jumplink" label="1">无正文</el-radio>
                                 <el-radio v-model="jumplink" label="2">链接正文</el-radio>
                             </div>
-                            <div class="wangEditor" v-if="jumplink == 2">
-                                <UEditor v-if="jumplink == 2" :setid=id :config=config ref="ueditor"></UEditor>
+                            <div class="wangEditor" v-if="jumplink == '2'">
+                                <UEditor v-if="jumplink == '2'" :setid=id :source='source' :config=config ref="ueditor"></UEditor>
                             </div>
                         </div>
 
@@ -235,15 +235,17 @@
     import Aside from '../components/aside'
     import Headercontent from '../components/headercontent'
     import UEditor from "../components/ueditor.vue";
+    import Service from '../common/service'
     export default {
         name: "addbanner",
         components: { UEditor,Aside ,Headercontent},
         data() {
             return {
+                source: 'news',
                 id: '',
-                textarea: '动态摘要',
+                summary: '动态摘要',
                 jumplink: "1",
-                newsTime: '动态时间',
+                newsTime: '',
                 dialogImageUrl: '',
                 dialogVisible: false,
                 selectImg: [],
@@ -280,6 +282,7 @@
            var type = localStorage.getItem('type');
            if(this.$route.query.id){
                this.id = this.$route.query.id;
+               this.getDetail()
            }
            if(type){
                if(type == 'new'){
@@ -288,7 +291,8 @@
                    this.title = '编辑动态'
                }
            }
-            this.newsTime = this.timetrans('1551936730');
+            // this.newsTime = this.timetrans('1541376000000');
+           console.log(this.newsTime)
         },
         mounted(){
             var width = $(".editorNews").width();
@@ -299,13 +303,37 @@
             $('.dialogcontent').css({"left":left,'top': top})
         },
         methods: {
+            getDetail(){
+                Service.news().getNewsDetail({},this.id).then(response => {
+                   console.log(response.data);
+                   this.imageUrl = response.data.imageUrl;
+                    this.summary = response.data.summary;
+                    this.titlecontent = response.data.title;
+                    this.imageUrl = response.data.imageUrl;
+                    if(response.data.linked){
+                        this.jumplink = "2";
+                    }else{
+                        this.jumplink = "1";
+                    }
+                    this.newsTime =this.timetrans(response.data.time)
+                    console.log(this.newsTime)
+                }, err => {
+                });
+            },
+            changeSummary(){
+                this.summary = this.summary.substring(0,200)
+            },
+            changetitlecontent(){
+                this.titlecontent = this.titlecontent.substring(0,50)
+            },
             timetrans(timestamp) {//初始化时间
                 var getSeconds = '', getMinutes = '', getHours = '';
-                var d = new Date(timestamp*1000);
+                var d = new Date(timestamp);
                 getHours = d.getHours() < 10 ? '0' + d.getHours() : d.getHours();
                 getMinutes = d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes()
                 getSeconds = d.getSeconds() < 10 ? '0' + d.getSeconds() : d.getSeconds()
                 var newTime = d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日';
+                console.log(newTime)
                 return newTime
             },
             //获取文档内容
@@ -313,7 +341,6 @@
                 let content = this.$refs.ueditor.getUEContent();
             },
             errphoto(err, file, fileList){
-                console.log(err)
             },
             beforeAvatarUpload(file) {
                 const isLt2M = file.size / 1024 / 1024 < 0.5;
@@ -328,9 +355,10 @@
             handleChange(file, fileList) {
             },
             startdateChange(val){
+
             },
             saveNews(){//保存公司动态
-                this.$router.push({name:'backnews'})
+
                 if(this.titlecontent.length == 0){
                     this.$message.warning('请输入动态标题');
                     return;
@@ -343,20 +371,51 @@
                     this.$message.warning('请上传封面图片');
                     return;
                 }
-                if(this.textarea == ''){
+                if(this.summary == ''){
                     this.$message.warning('请输入摘要内容');
                     return;
                 }
+                var linked = false,content = '';
                 if(this.jumplink == '2'){
+                    linked = true;
                     if(this.$refs.ueditor.getUEContent() == ''){
-                        this.$message.warning('请输入摘要内容');
+                        this.$message.warning('请输入正文内容');
+                        return;
+                    }else{
+                        content = this.$refs.ueditor.getUEContent();
                     }
-                    return;
+
                 }
-                localStorage.removeItem('type')
+                var time = this.newsTime.replace(/年/g,'-').replace(/月/g,'-').replace(/日/g,'');
+               time = new Date(time).getTime();
+                var data = {
+                    "content": content,
+                    "imageUrl": this.imageUrl,
+                    "linked": linked,
+                    "summary": this.summary,
+                    "time": time,
+                    "title": this.titlecontent
+                }
+                if(this.id){
+                    Service.news().editorNews(data,this.id).then(response => {
+                        console.log(response)
+                        if(response.errorCode == 0){
+                            this.$router.push({name:'backnews'})
+                            localStorage.removeItem('type')
+                        }
+                    }, err => {
+                    });
+                }else{
+                    Service.news().addNews(data).then(response => {
+                        this.$router.push({name:'backnews'})
+                        localStorage.removeItem('type')
+                    }, err => {
+                    });
+                }
 
             },
             cancleImg(){
+                this.$router.push({name:'backnews'})
                 localStorage.removeItem('type')
             },
             preview(){

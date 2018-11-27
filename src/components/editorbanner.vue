@@ -100,7 +100,7 @@
                                 type="textarea"
                                 :rows="3"
                                 placeholder="请输入内容"
-                                v-model="href">
+                                v-model="href" @keyup.native="changeHref" >
                         </el-input>
                     </div>
                     <div class="lianjie">
@@ -165,7 +165,7 @@
         },
         data() {
             return {
-                indexnum: 1,
+                indexnum: 0,
                 stoppublish: '1',
                 expireTimeOption: {
                     disabledDate(date) {
@@ -189,9 +189,11 @@
             // this.startTime = new Date(this.timetrans('1551936730'))
             // console.log( this.startTime)
             this.getBanner()
-
         },
         watch:{
+            'href'(){
+
+            },
             'radio'(){
             },
             'publish'(){
@@ -213,11 +215,12 @@
         },
 
         methods: {
+            changeHref(item){
+                this.href = this.href.substring(0,50)
+            },
             setActiveItem(index){
-                console.log(index)
                 this.changeBanner(index)
                 this.indexnum = Number(index);
-
             },
             getBanner(){
                 var id = 1;
@@ -225,9 +228,7 @@
                 },id).then(response => {
                     if(response.data.length == 0){
                     }else{
-                        console.log(response.data)
                         this.photos = response.data;
-                        console.log(this.photos)
                         this.getAdvers()
                     }
                 }, err => {
@@ -242,7 +243,6 @@
                             if(this.photos[i].imageUrl == this.imageUrl){
                                 // this.indexnum = Number(i);
                                 this.setActiveItem(i)
-
                             }
                         }
                         if(!response.data.href){
@@ -274,7 +274,6 @@
                 getMinutes = d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes()
                 getSeconds = d.getSeconds() < 10 ? '0' + d.getSeconds() : d.getSeconds()
                 var newTime = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() + ' ' + getHours + ':' + getMinutes + ':' + getSeconds;
-                console.log(newTime)
                 return newTime
             },
             compare(){
@@ -291,13 +290,10 @@
                 }
             },
             startdateChange(val){
-                console.log(this.startTime)
                 console.log(val)
                  this.compare()
-
             },
             enddateChange(val){
-                console.log(val)
                 this.compare()
             },
             beginDate(){
@@ -315,6 +311,8 @@
             },
             changeBanner(index){//切换图片，获取新的数据
                 console.log(index)
+                // this.id = this.photos[index].id;
+                // this.getAdvers()
             },
             open8(message) {
                 this.$message({
@@ -328,6 +326,22 @@
                 if(this.radio == "2"){
                     if(this.href == ''){
                         this.open8('请输入自定义链接');
+                        return;
+                    }
+                    var strRegex = '^((https|http|ftp|rtsp|mms)?://)'
+                        + '?(([0-9a-z_!~*\'().&=+$%-]+: )?[0-9a-z_!~*\'().&=+$%-]+@)?' //ftp的user@
+                        + '(([0-9]{1,3}.){3}[0-9]{1,3}' // IP形式的URL- 199.194.52.184
+                        + '|' // 允许IP和DOMAIN（域名）
+                        + '([0-9a-z_!~*\'()-]+.)*' // 域名- www.
+                        + '([0-9a-z][0-9a-z-]{0,61})?[0-9a-z].' // 二级域名
+                        + '[a-z]{2,6})' // first level domain- .com or .museum
+                        + '(:[0-9]{1,4})?' // 端口- :80
+                        + '((/?)|' // a slash isn't required if there is no file name
+                        + '(/[0-9a-z_!~*\'().;?:@&=+$,%#-]+)+/?)$';
+                    var re=new RegExp(strRegex);
+                    if (re.test(this.href )) {
+                    } else {
+                        this.open8('请输入正确的链接地址');
                         return;
                     }
                 }
