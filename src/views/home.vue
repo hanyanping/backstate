@@ -211,32 +211,44 @@
         },
         methods:{
             upSort(index){
-                var temp = this.tableData[index-1];
-                var data = this.tableData;
-                data[index-1] = this.tableData[index];
-                data[index] = temp;
-                for(var i = 0;i<data.length;i++){
-                    var obj = {
-                        id: data[i].id,
-                        sort: i
+                var num = this.judgeArr(this.permissions,'advert:item:sort')
+                if(num<this.permissions.length){
+                    var temp = this.tableData[index-1];
+                    var data = this.tableData;
+                    data[index-1] = this.tableData[index];
+                    data[index] = temp;
+                    for(var i = 0;i<data.length;i++){
+                        var obj = {
+                            id: data[i].id,
+                            sort: i
+                        }
+                        this.changeData.push(obj)
                     }
-                    this.changeData.push(obj)
+                    this.itemSort()
+                }else{
+                    this.$message.error('您暂无此权限')
                 }
-                this.itemSort()
+
             },
             downSort(index){
-                var temp = this.tableData[index+1];
-                var data = this.tableData;
-                data[index+1] = this.tableData[index];
-                data[index] = temp;
-                for(var i = 0;i<data.length;i++){
-                    var obj = {
-                        id: data[i].id,
-                        sort: i
+                var num = this.judgeArr(this.permissions,'advert:item:sort')
+                if(num<this.permissions.length){
+                    var temp = this.tableData[index+1];
+                    var data = this.tableData;
+                    data[index+1] = this.tableData[index];
+                    data[index] = temp;
+                    for(var i = 0;i<data.length;i++){
+                        var obj = {
+                            id: data[i].id,
+                            sort: i
+                        }
+                        this.changeData.push(obj)
                     }
-                    this.changeData.push(obj)
+                    this.itemSort()
+                }else{
+                    this.$message.error('您暂无此权限')
                 }
-                this.itemSort()
+
             },
             itemSort(){
                 Service.advert().itemSort(this.changeData).then(response => {
@@ -246,10 +258,16 @@
                 });
             },
             itemPublish(item){
-                this.publishObj.ids.push(item.id);
-                this.publishObj.beginTime = item.beginTime;
-                this.publishObj.endTime = item.endTime;
-                this.allPublish();
+                var num = this.judgeArr(this.permissions,'advert:item:publish')
+                if(num<this.permissions.length){
+                    this.publishObj.ids.push(item.id);
+                    this.publishObj.beginTime = item.beginTime;
+                    this.publishObj.endTime = item.endTime;
+                    this.allPublish();
+                }else{
+                    this.$message.error('您暂无此权限')
+                }
+
             },
             allPublish(){
                 if(this.publishObj.ids.length==0){
@@ -328,7 +346,7 @@
                if(num<this.permissions.length){
                    this.showAddbanner = true;
                }else{
-                   this.$message.error('您暂无次权限')
+                   this.$message.error('您暂无此权限')
                }
             },
             editorBanner(id){
@@ -337,7 +355,7 @@
                 if(num<this.permissions.length){
                     this.showEditorbanner = true;
                 }else{
-                    this.$message.error('您暂无次权限')
+                    this.$message.error('您暂无此权限')
                 }
            },
             deleteBanner(id,imageUrl){
@@ -347,7 +365,7 @@
                 if(num<this.permissions.length){
                     this.showDeletebanner = true;
                 }else{
-                    this.$message.error('您暂无次权限')
+                    this.$message.error('您暂无此权限')
                 }
             },
             getBannerData(){

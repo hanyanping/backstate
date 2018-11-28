@@ -214,6 +214,66 @@ export default {
             },
         }
     },
+    partner(){
+        return{
+            getPartners: function (data) {
+                return getResource({
+                    url: '/sys/admin/partner',
+                    method: 'get'
+                }, data)
+            },
+            addPartner: function (data) {
+                return getResource({
+                    url: '/sys/admin/partner/batch/add',
+                    method: 'post'
+                }, data)
+            },
+            deletePartner: function (data,key) {
+                return getResource({
+                    url: `/sys/admin/partner/${key}`,
+                    method: 'DELETE'
+                }, data)
+            },
+            partnerSort: function (data,key) {
+                return getResource({
+                    url: `/sys/admin/partner/sort`,
+                    method: 'POST'
+                }, data)
+            },
+            editorPartner: function (data,key) {
+                return getResource({
+                    url: `/sys/admin/partner/${key}`,
+                    method: 'POST'
+                }, data)
+            },
+            getPartner: function (data,key) {
+                return getResource({
+                    url: `/sys/admin/partner/${key}`,
+                    method: 'GET'
+                }, data)
+            },
+        }
+    },
+    role(){
+        return{
+            getRoles: function (data) {
+                return getResource({
+                    url: '/sys/admin/role',
+                    method: 'get'
+                }, data)
+            },
+        }
+    },
+    article(){
+        return{
+            getinquiry: function (data) {
+                return getResource({
+                    url: '/sys/admin/article',
+                    method: 'get'
+                }, data)
+            },
+        }
+    },
     common() {
         return {
             postphone: function (data) {

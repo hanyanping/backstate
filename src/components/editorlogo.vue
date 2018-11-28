@@ -107,7 +107,6 @@
                                 :on-change="handleChange"
                                 :on-success="handleAvatarSuccess"
                                 :before-upload="beforeAvatarUpload"
-                                :on-error="errphoto"
                                 :show-file-list="false"
                                 accept=".jpg,.jpeg,.png,.gif,.bmp,.JPG,.JPEG,.GIF,.BMP"
                         >
@@ -132,15 +131,20 @@
     import Service from '../common/service'
     export default {
         name: "editorlogo",
+        props:{
+          id:{
+              type: Number,
+          }
+        },
         data() {
             return {
                 dialogImageUrl: '',
                 dialogVisible: false,
-                imageUrl: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bac2.png',
+                imageUrl: '',
             };
         },
         created(){
-
+            this.getPartner()
         },
         mounted(){
             var width = $(".deletebanner").width();
@@ -151,14 +155,23 @@
             $('.dialogcontent').css({"left":left,'top': top})
         },
         methods: {
-            timetrans(timestamp) {
-                var getSeconds = '', getMinutes = '', getHours = '';
-                var d = new Date(timestamp*1000);
-                getHours = d.getHours() < 10 ? '0' + d.getHours() : d.getHours();
-                getMinutes = d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes()
-                getSeconds = d.getSeconds() < 10 ? '0' + d.getSeconds() : d.getSeconds()
-                var newTime = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() + ' ' + getHours + ':' + getMinutes + ':' + getSeconds;
-                return newTime
+            beforeAvatarUpload(file) {
+                const isLt2M = file.size / 1024 / 1024 < 0.5;
+                if (!isLt2M) {
+                    this.$message.error('上传图片大小不能超过500k!');
+                }
+                return isLt2M;
+            },
+            handleAvatarSuccess(res, file) {
+                this.imageUrl = res.url;
+            },
+            getPartner(){
+                Service.partner().getPartner({},this.id).then(response => {
+                   this.imageUrl = response.data.imageUrl;
+                }, err => {
+                });
+            },
+            handleChange(file, fileList) {
             },
             open8(message) {
                 this.$message({
@@ -168,7 +181,16 @@
                 });
             },
             sureImg(){//确定选中照片
-                this.$emit('clickbanner', 'sure')
+                Service.partner().editorPartner({
+                    "description": "",
+                    "imageUrl": this.imageUrl,
+                    "name": "",
+                    "sort": ''
+                },this.id).then(response => {
+                    this.$emit('clickbanner', 'sure')
+                }, err => {
+                });
+
             },
             cancleImg(){
                 this.$emit('clickbanner', 'cancle')

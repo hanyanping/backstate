@@ -55,6 +55,10 @@
                             margin-bottom:20px;
                         }
                     }
+                    .noData{
+                        text-align: center;
+                        padding: 30px;
+                    }
                     .table{
                         width: 100%;
                         font-size: 12px;
@@ -154,18 +158,27 @@
             <div class="contanter">
                 <div class="hometitle">新闻资讯</div>
                 <div class="bannerTable">
-                    <el-tabs :tab-position="tabPosition">
+                    <el-tabs :tab-position="tabPosition" v-model="activeName" @tab-click="handleClick">
                         <el-tab-pane label="已发布文章">
                             <div class="searchbox">
-                                <div class="inputBox">文章编号 : <input type="text" placeholder="请输入文章编号"/></div>
-                                <div class="inputBox">文章标题 : <input type="text" placeholder="请输入文章标题"/></div>
+                                <div class="inputBox">文章编号 : <input type="text" v-model='articleId' placeholder="请输入文章编号"/></div>
+                                <div class="inputBox">文章标题 : <input type="text" v-model='title' placeholder="请输入文章标题"/></div>
                                 <div class="inputBox">发布时间 :
                                     <el-date-picker
-                                            v-model="selectTime"
-                                            type="daterange"
-                                            range-separator="至"
-                                            start-placeholder="开始日期"
-                                            end-placeholder="结束日期">
+                                            @change="startdateChange"
+                                            v-model="startTime"
+                                            type="date"
+                                            placeholder="选择开始时间"
+                                            format="yyyy-MM-dd"
+                                            value-format="yyyy-MM-dd">
+                                    </el-date-picker>
+                                    <el-date-picker
+                                            @change="enddateChange"
+                                            v-model="endTime"
+                                            type="date"
+                                            placeholder="选择结束时间"
+                                            format="yyyy-MM-dd"
+                                            value-format="yyyy-MM-dd">
                                     </el-date-picker>
                                 </div>
                                 <div class="inputBox">文章分类 : <el-select v-model="fenlei" placeholder="请选择文章分类">
@@ -176,10 +189,10 @@
                                             :value="item.value">
                                     </el-option>
                                 </el-select></div>
-                                <div class="inputBox">文章摘要 : <input type="text" placeholder="请输入文章摘要"/></div>
-                                <div class="searchButton cursor">查询</div>
+                                <div class="inputBox">文章摘要 : <input type="text"  v-model="summary" placeholder="请输入文章摘要"/></div>
+                                <div class="searchButton cursor" @click="searchAlready">查询</div>
                             </div>
-                            <div class="tableBox">
+                            <div v-if="noData" class="tableBox">
                                 <table class="table">
                                     <tr>
                                         <th>编号</th>
@@ -191,17 +204,18 @@
                                         <th>操作</th>
                                     </tr>
                                     <tr v-for="(item,index) in tableData">
-                                        <td>{{index}}</td>
+                                        <td>{{item.id}}</td>
                                         <td>
-                                            <div class='back' :style="{backgroundImage: 'url(' + item.bannerurl + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}"></div>
+                                            <div class='back' :style="{backgroundImage: 'url(' + item.imageUrl + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}"></div>
                                         </td>
-                                        <td>诺如病毒高发季，家长老师需警惕！</td>
-                                        <td>养生</td>
-                                        <td>{{item.url}}</td>
-                                        <td>{{item.state}}</td>
+                                        <td>{{item.title}}</td>
+                                        <td>{{getArticleTitle(item.tagId)}}</td>
+                                        <td>{{item.summary}}</td>
+                                        <td v-if="item.publishDate">{{timetrans(item.publishDate)}}</td>
+                                        <td v-if="!item.publishDate">暂无</td>
                                         <td>
                                             <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>
-                                            <img @click="editorBanner('editor','13966')" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
+                                            <img @click='editorBanner(item.id)' @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
                                             <span class="deleteText warmtext" v-if="item.isDelete" >删除</span>
                                             <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                                         </td>
@@ -211,14 +225,15 @@
                                     <el-pagination
                                             @size-change="handleSizeChange"
                                             @current-change="handleCurrentChange"
-                                            :current-page.sync="currentPage"
-                                            :page-size="100"
-                                            :page-sizes="[4]"
-                                            layout="total,sizes, prev, pager, next"
-                                            :total="1000">
+                                            :current-page.sync="page"
+                                            :page-size="size"
+                                            :page-sizes="[10,20]"
+                                            layout="total,sizes, prev, pager, next,jumper"
+                                            :total="total">
                                     </el-pagination>
                                 </div>
                             </div>
+                            <div v-if="!noData" class="noData">暂无数据</div>
                         </el-tab-pane>
                         <el-tab-pane label="已移除">
                             <div class="searchbox">
@@ -258,12 +273,13 @@
                                     <tr v-for="(item,index) in tableData">
                                         <td>{{index}}</td>
                                         <td>
-                                            <div class='back' :style="{backgroundImage: 'url(' + item.bannerurl + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}"></div>
+                                            <div class='back' :style="{backgroundImage: 'url(' + item.imageUrl + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}"></div>
                                         </td>
-                                        <td>诺如病毒高发季，家长老师需警惕！</td>
-                                        <td>养生</td>
-                                        <td>{{item.url}}</td>
-                                        <td>{{item.state}}</td>
+                                        <td>{{item.title}}</td>
+                                        <td>getArticleTitle(item.tagId)</td>
+                                        <td>{{item.summary}}</td>
+                                        <td v-if="item.publishDate">{{timetrans(item.publishDate)}}</td>
+                                        <td v-if="!item.publishDate">暂无</td>
                                         <td>
                                             <span class=" warmtext" v-if="item.ispublish">发布</span>
                                             <img class="publishimg imgicon cursor" @mouseenter="enterStyleone(item)" @mouseleave='leaveStyleone(item)' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/jinlingyingcaiwangtubiao97.png">
@@ -276,7 +292,7 @@
                                     <el-pagination
                                             @size-change="handleSizeChange"
                                             @current-change="handleCurrentChange"
-                                            :current-page.sync="currentPage"
+                                            :current-page.sync="page"
                                             :page-size="100"
                                             :page-sizes="[4]"
                                             layout="total,sizes, prev, pager, next"
@@ -300,11 +316,22 @@
     import Headercontent from '../components/headercontent'
     import Addbanner from '../components/addbanner'
     import  Deletebanner from '../components/deletebanner'
+    import Service from '../common/service'
+    import Filter from '../common/filter'
     export default {
         name: "healthinquiry",
         data() {
             return {
-                options: [{
+                activeName:'0',
+                status: 0,
+                articleId: '',
+                summary: '',
+                title: '',
+                options: [
+                    {
+                        value: '',
+                        label: '请选择分类'
+                    },{
                     value: '1',
                     label: '中医'
                 }, {
@@ -329,40 +356,93 @@
                     label: '育儿'
                 },
                 {
-                    value: '',
+                    value: '8',
                     label: '健康'
                 }],
+                page: 1,
+                size: 10,
+                total: 1,
                 fenlei: '',
                 selectTime: '',
+                endTime: '',
+                startTime: '',
                 tabPosition: 'top',
-                currentPage: 1,
                 showDeletebanner: false,
                 showAddbanner: false,
                 showEditornews: false,
-                tableData: [{
-                    bannerurl: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/banben2.jpg',
-                    url: '近年来，有关体育运动改变肠道微生物组的研究已成为热点研究。去年年底发表的两项研究表明，在不改变任何饮食条件的情况..',
-                    state: '2018年10月20日'
-                },
-                    {
-                        bannerurl: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/banben2.jpg',
-                        url: '近年来，有关体育运动改变肠道微生物组的研究已成为热点研究。去年年底发表的两项研究表明，在不改变任何饮食条件的情况..',
-                        state: '已发布'
-                    },
-                    {
-                        bannerurl: 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/banben2.jpg',
-                        url: '有关体育运动改变肠道微生物组的研究已成为热点研究。去年年',
-                        state: '2018年10月20日'
-                    }]
+                tableData: [],
+                noData:false,
             };
         },
         created(){
-            for(let i in this.tableData){
-                this.tableData[i].upicon= require('../assets/images/back.png')
-                this.tableData[i].downicon= require('../assets/images/down.png')
-            }
+            this.searchAlready()
         },
         methods:{
+            getArticleTitle(status){
+                return Filter.getArticleStatus(status)
+            },
+            handleClick(tab, event) {
+                console.log(tab);
+                console.log(this.activeName);
+            },
+            timetrans(timestamp) {//初始化时间
+                var getSeconds = '', getMinutes = '', getHours = '';
+                var d = new Date(timestamp);
+                getHours = d.getHours() < 10 ? '0' + d.getHours() : d.getHours();
+                getMinutes = d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes()
+                getSeconds = d.getSeconds() < 10 ? '0' + d.getSeconds() : d.getSeconds()
+                var newTime = d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日';
+                return newTime
+            },
+            searchAlready(){
+                if(this.startTime && this.endTime ){
+                    if(this.startTime>this.endTime){
+                        this.$message({
+                            message: '结束时间不可小于开始时间',
+                            type: 'warning'
+                        });
+                        return;
+                    }
+                }
+                Service.article().getinquiry({page:this.page,size: this.size,categoryId:1,id:this.articleId,title: this.title,summary: this.summary,
+                    startTime: this.startTime,endTime:this.endTime,tagId:this.fenlei,status: this.status}).then(response => {
+                        if(response.errorCode == 0){
+                            if(response.data.records.length!=0){
+                                this.noData = true;
+                                for(let i in response.data.records){
+                                    response.data.records[i].isEditor = false;
+                                    response.data.records[i].isDelete = false;
+                                }
+                                this.total = response.data.total;
+                                this.$nextTick(()=>{
+                                    this.tableData =  response.data.records;
+                                })
+                            }else{
+                                this.tableData = [];
+                                this.noData = false;
+                            }
+                        }
+                }, err => {
+                });
+            },
+            startdateChange(val){
+                console.log(val)
+                this.compare()
+            },
+            enddateChange(val){
+                this.compare()
+            },
+            compare(){
+                if(this.startTime && this.endTime ){
+                    if(this.startTime>this.endTime){
+                        this.$message({
+                            message: '结束时间不可小于开始时间',
+                            type: 'warning'
+                        });
+                        return;
+                    }
+                }
+            },
             enterStyleone(item){
                 item.ispublish = true;
                 this.$forceUpdate()
@@ -390,9 +470,13 @@
             },
             handleSizeChange(val) {
                 console.log(`每页 ${val} 条`);
+                this.size = val;
+                this.searchAlready();
             },
             handleCurrentChange(val) {
                 console.log(`当前页: ${val}`);
+                this.page = val;
+                this.searchAlready();
             },
             addBanner(){
                 this.showEditornews = true;

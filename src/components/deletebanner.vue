@@ -37,7 +37,7 @@
                         .back{
                             height: 174px;
                             width: 314px;
-                            background-size: cover;
+                            background-size: 100% 100%;
                         }
                     }
                     .lianjie{
@@ -85,7 +85,7 @@
                 <div class="imgContent">
                     <div class="block">
                         <div class="isdelete">是否确定删除？</div>
-                        <div  class="back"  @click="setActiveItem(index)" :style="{backgroundImage: 'url(' + imageUrl + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}">
+                        <div  class="back"   :style="{backgroundImage: 'url(' + imageUrl + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}">
                         </div>
                     </div>
                     <!--<div class="lianjie" v-if="source=='banner'">-->
@@ -184,6 +184,13 @@
                 }
                 if(this.source == 'banner'){
                     Service.advert().deleteadvert({
+                    },this.id).then(response => {
+                        this.$emit('clickbanner', 'sure')
+                    }, err => {
+                    });
+                }
+                if(this.source == 'cooperative'){
+                    Service.partner().deletePartner({
                     },this.id).then(response => {
                         this.$emit('clickbanner', 'sure')
                     }, err => {

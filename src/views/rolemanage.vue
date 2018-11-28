@@ -14,6 +14,10 @@
                 background: #fff;
                 width: 100%;
                 margin-top: 15px;
+                .noData{
+                    text-align: center;
+                    padding-top: 30px;
+                }
                 .tableBox{
                     padding-bottom: 20px;
                     border-bottom: 1px solid #eee;
@@ -99,13 +103,13 @@
                             </tr>
                             <tr v-for="(item,index) in tableData">
                                 <td>
-                                   管理员
+                                   {{item.name}}
                                 </td>
-                                <td>具备所有管理权限</td>
+                                <td>{{item.description}}</td>
                                 <td>34</td>
                                 <td>
                                     <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>
-                                    <img @click="editorRole('3')" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
+                                    <img @click="addRole('3')" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
                                     <span class="deleteText warmtext" v-if="item.isDelete" >删除</span>
                                     <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                                 </td>
@@ -116,21 +120,22 @@
                             <el-pagination
                                     @size-change="handleSizeChange"
                                     @current-change="handleCurrentChange"
-                                    :current-page.sync="currentPage"
+                                    :current-page.sync="page"
                                     :page-size="100"
-                                    :page-sizes="[4]"
-                                    layout="total,sizes, prev, pager, next"
-                                    :total="1000">
+                                    :page-sizes="[5,10,20]"
+                                    layout="total, sizes, prev, pager, next, jumper"
+                                    :total="total">
                             </el-pagination>
                         </div>
                     </div>
+                    <div v-if="!noData" class="noData">暂无数据</div>
                     <div class="homebutton">
-                        <span class="sureButton cursor" @click="addRole">添加角色</span>
+                        <span class="sureButton cursor" @click="addRole('')">添加角色</span>
                     </div>
                 </div>
             </div>
-            <Addrole v-if='showAddrole' :id="id" @clickbanner="getBanner"></Addrole>
-            <Deletebanner v-if='showDeletebanner' @clickbanner="getBanner"></Deletebanner>
+            <Addrole v-if='showAddrole' :id="id" @clickbanner="getRole"></Addrole>
+            <Deletebanner v-if='showDeletebanner' @clickbanner="getRole"></Deletebanner>
         </div>
     </div>
 </template>
@@ -140,23 +145,43 @@
     import Headercontent from '../components/headercontent'
     import Addrole from '../components/addRole'
     import  Deletebanner from '../components/deletebanner'
+    import Service from '../common/service'
     export default {
         name: "home",
         data() {
             return {
                 id: '',
-                currentPage: 1,
+                page: 1,
+                size: 10,
+                total: 1,
                 showDeletebanner: false,
                 showAddrole: false,
                 showEditornews: false,
                 tableData: [
-                ]
+                ],
+                noData: false,
+                userInfo:'',
+                permissions: [],
             };
         },
         created(){
-            this.getBanner();
+            this.userInfo = JSON.parse(localStorage.getItem('user'));
+            if(this.userInfo){
+                this.permissions = this.userInfo.permissions;
+            }
+            this.getRoleData();
         },
         methods:{
+            judgeArr(arr,value){
+                var num = 0;
+                for(var i=0;i<arr.length;i++){
+                    if(arr[i] == value){
+                    }else{
+                        num++;
+                    }
+                }
+                return num
+            },
             enterStyletwo(item){
                 item.isEditor = true;
                 this.$forceUpdate();
@@ -174,7 +199,8 @@
                 item.isDelete = false;
                 this.$forceUpdate()
             },
-            addRole(){
+            addRole(id){
+                this.id = id;
                 this.showAddrole = true;
             },
             handleSizeChange(val) {
@@ -190,50 +216,39 @@
             deleteBanner(){
                 this.showDeletebanner = true;
             },
-            getBanner(str){
+            getRoleData(){
+                Service.role().getRoles({page:this.page,size: this.size}).then(response => {
+                    if(response.data.records.length!=0){
+                        this.noData = true;
+                        for(let i in response.data.records){
+                            response.data.records[i].ispublish = false;
+                            response.data.records[i].isEditor = false;
+                            response.data.records[i].isDelete = false;
+                            response.data.records[i].upicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangyi.png';
+                            response.data.records[i].downicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xiayi.png';
+                        }
+                        this.total = response.data.total;
+                        this.$nextTick(()=>{
+                            this.tableData = response.data.records;
+                        })
+                    }else{
+                        this.noData = false;
+                    }
+                }, err => {
+                });
+            },
+            getRole(str){
                 if(str == 'sure'){
                     this.showAddrole = false;
                     this.showDeletebanner = false;
+                    this.getRoleData()
                 }
                 if(str == 'cancel'){
                     this.showAddrole = false;
                     this.showDeletebanner = false;
                 }
-                var data = [{
-                    phone: '134556666666',
-                    name: '自己安康快乐',
-                    email:'485849595959@qq.com',
-                    addName: '长大就按',
-                    authority:'管理员，运营',
-                    state: '2018年10月20日'
-                },
-                    {
-                        phone: '134556666666',
-                        name: '自己安康快乐',
-                        email:'485849595959@qq.com',
-                        addName: '长大就按',
-                        authority:'管理员，运营',
-                        state: '2018年10月20日'
-                    },
-                    {
-                        phone: '134556666666',
-                        name: '自己安康快乐',
-                        email:'485849595959@qq.com',
-                        addName: '长大就按',
-                        authority:'管理员，运营',
-                        state: '2018年10月20日'
-                    }];
 
-                for(let i in data){
-                    data[i].ispublish = false;
-                    data[i].isEditor = false;
-                    data[i].isDelete = false;
-                    data[i].upicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangyi.png';
-                    data[i].downicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xiayi.png';
-                }
-                this.$nextTick(()=>{
-                    this.tableData = data;
-                })
+
             }
         },
         components:{

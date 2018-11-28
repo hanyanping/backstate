@@ -54,7 +54,7 @@ const getArticleImg = (status) => {
         case 7:
             imgSrc = require( '../assets/images/yuer.png')
             break;
-        default:
+        case 8:
             imgSrc = require( '../assets/images/jiankang.png');
             break
     }
@@ -84,7 +84,7 @@ const getArticleStatus = (status) => {
         case 7:
             statusDesc = '育儿';
             break;
-        default:
+        case 8:
             statusDesc = '健康';
             break
     }

@@ -137,7 +137,7 @@
                                     @size-change="handleSizeChange"
                                     @current-change="handleCurrentChange"
                                     :current-page.sync="page"
-                                    :page-size="100"
+                                    :page-size="size"
                                     :page-sizes="[5,10,20]"
                                     layout="total, sizes, prev, pager, next, jumper"
                                     :total="total">
@@ -174,7 +174,7 @@
                 showEditornews: false,
                 tableData: [],
                 page: 1,
-                size: 10,
+                size: 5,
                 total: 1,
                 userInfo:'',
                 permissions: [],
@@ -214,12 +214,10 @@
                 this.$forceUpdate()
             },
             handleSizeChange(val) {
-                console.log(`每页 ${val} 条`);
                 this.size = val;
                 this.getNewData();
             },
             handleCurrentChange(val) {
-                console.log(`当前页: ${val}`);
                 this.page = val;
                 this.getNewData();
             },
@@ -237,12 +235,17 @@
                 return num
             },
             editorNews(type,id){
-                var num = this.judgeArr(this.permissions,'news:edit')
+                if(type == 'editor'){
+                    var num = this.judgeArr(this.permissions,'news:edit')
+                }else{
+                    var num = this.judgeArr(this.permissions,'news:add')
+                }
+
                 if(num<this.permissions.length){
                     localStorage.setItem('type', type)
                     this.$router.push({'name':'editornews',query:{id: id}})
                 }else{
-                    this.$message.error('您暂无次权限')
+                    this.$message.error('您暂无此权限')
                 }
             },
             deleteNews(id,imageUrl){
@@ -252,7 +255,7 @@
                     this.imageUrl = imageUrl;
                     this.showDeletebanner = true;
                 }else{
-                    this.$message.error('您暂无次权限')
+                    this.$message.error('您暂无此权限')
                 }
 
             },
