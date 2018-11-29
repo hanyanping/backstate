@@ -68,10 +68,10 @@
         },
         getarticle(){
             console.log(this.setid)
-            if(this.setid == ''){
+            if(this.setid == '' || !this.setid){
                 var ue = UE.getEditor('editor');
                 ue.ready(function() {
-                    ue.setContent('<p>hello</p>');
+                    ue.setContent('<p></p>');
                 });
                 return;
             }

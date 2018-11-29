@@ -215,7 +215,8 @@
                                 <el-radio v-model="jumplink" label="2">链接正文</el-radio>
                             </div>
                             <div class="wangEditor" v-if="jumplink == '2'">
-                                <UEditor v-if="jumplink == '2'" :setid=id :source='source' :config=config ref="ueditor"></UEditor>
+                                <UEditor v-if="jumplink == '2' && id != ''"  :setid=id :source='source' :config=config ref="ueditor"></UEditor>
+                                <UEditor v-if="jumplink == '2' &&id == '' "   :source='source' :config=config ref="ueditor"></UEditor>
                             </div>
                         </div>
 
@@ -273,7 +274,9 @@
                     initialFrameWidth: 500,
                     initialFrameHeight: 300,
                     BaseUrl: "",
-                    UEDITOR_HOME_URL: "static/ueditor/"
+                    UEDITOR_HOME_URL: "static/ueditor/",
+                    author:'',
+
                 },
             };
         },

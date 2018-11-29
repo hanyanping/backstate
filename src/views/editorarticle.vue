@@ -39,8 +39,8 @@
                         padding-bottom: 20px;
                         cursor: pointer;
                         .backiconno{
-                            width: 100%;
-                            height: 170px;
+                            width: 350px;
+                            height: 214px;
                             background: #f4f4f4f4;
                         }
                         .backicon{
@@ -80,11 +80,15 @@
                             color: #3d3d3d;
                             font-weight: 600;
                             display: -webkit-box;
-                            height: 60px;
                             -webkit-box-orient: vertical;
                             -webkit-line-clamp: 2;
                             overflow: hidden;
                             margin-bottom: 0px;
+                        }
+                        .summary{
+                            font-size: 14px;
+                            color: #929292;
+                            padding: 10px 15px 0;
                         }
                     }
                 }
@@ -191,17 +195,18 @@
                                 <div class="lable clear">
                                     <div  class='fl' >
                                          <span class="lableIcon">
-                                             <img :src="getArticleImg(classify)">
+                                             <img :src="getArticleImg(parseInt(classify))" >
                                         </span>
-                                        <span class="lableText">{{getArticleTitle('养生')}}</span>
+                                        <span class="lableText">{{getArticleTitle(parseInt(classify))}}</span>
                                     </div>
                                 </div>
                                 <p class="lead"  v-html="titlecontent"></p>
+                                <p class="summary"  v-html="summary"></p>
                             </div>
                         </div>
                         <div class="contentRight">
                             <div class="inputText">
-                                <span class="demonstration">标题 :</span><input class='newsTitle' placeholder="请输入标题" v-model='titlecontent' type="text">
+                                <span class="demonstration">标题 :</span><input class='newsTitle' @keyup="changetitlecontent" placeholder="请输入标题" v-model='titlecontent' type="text">
                             </div>
                             <div class="inputText">
                                 <div class="block">
@@ -240,7 +245,7 @@
                                         type="textarea"
                                         :rows="3"
                                         placeholder="请输入内容"
-                                        v-model="textarea">
+                                        v-model="summary" @keyup.native="changeSummary">
                                 </el-input>
                             </div>
                             <!--<div class="inputText" style="display: flex;">-->
@@ -249,7 +254,8 @@
                                 <!--<el-radio v-model="jumplink" label="2">链接正文</el-radio>-->
                             <!--</div>-->
                             <div class="wangEditor">
-                                <UEditor :setid=id :config=config :source=source ref="ueditor"></UEditor>
+                                <UEditor v-if="id !=''" :setid='id' :config=config :source=source ref="ueditor"></UEditor>
+                                <UEditor v-if="id ==''"   :config=config :source=source ref="ueditor"></UEditor>
                             </div>
                         </div>
                     </div>
@@ -268,6 +274,7 @@
     import Aside from '../components/aside'
     import Headercontent from '../components/headercontent'
     import UEditor from "../components/ueditor.vue";
+    import Service from '../common/Service'
     import Filter from '../common/filter'
     export default {
         name: "editorarticle",
@@ -275,16 +282,13 @@
         data() {
             return {
                 classify: '',
-                classifyoptions:[{value: '1',label: '中医' },{value: '2',label: '养生'},{value: '3',label: '心理'},
+                classifyoptions:[{value: '',label: '请选择分类' },{value: '1',label: '中医' },{value: '2',label: '养生'},{value: '3',label: '心理'},
                 {value: '4',label: '运动'},{value: '5',label: '美丽'},{value: '6',label: '家庭'},{value: '7',label: '育儿'}
-                ,{value: '',label: '健康'}],
+                ,{value: '8',label: '健康'}],
                 id: '',
-                source: 'article',
-                textarea: '资讯摘要',
+                source:'',
+                summary: '资讯摘要',
                 newsTime: '文章发表时间',
-                dialogImageUrl: '',
-                dialogVisible: false,
-                selectImg: [],
                 imageUrl: '',
                 file: '',
                 title: '',
@@ -309,15 +313,32 @@
                     initialFrameWidth: 500,
                     initialFrameHeight: 300,
                     BaseUrl: "",
-                    UEDITOR_HOME_URL: "static/ueditor/"
+                    UEDITOR_HOME_URL: "static/ueditor/",
                 },
+                data:{
+                    "author": "",
+                    "best": null,
+                    "categoryId": '',
+                    "content": "",
+                    "href": "",
+                    "imageUrl": "",
+                    "keywords": "",
+                    "source": "",
+                    "sourceUrl": "",
+                    "status": '',
+                    "summary": "",
+                    "tagId": '',
+                    "title": "",
+                    "top": null
+                }
             };
         },
         created(){
-            // this.getphotoList()
             var type = localStorage.getItem('type');
+            this.source = this.$route.query.source;
             if(this.$route.query.id){
-                this.id = this.$route.query.id;
+                this.id = parseInt(this.$route.query.id);
+                this.getDetail()
             }
             if(type){
                 if(type == 'new'){
@@ -337,6 +358,40 @@
             $('.dialogcontent').css({"left":left,'top': top})
         },
         methods: {
+            changeSummary(){
+                this.summary = this.summary.substring(0,200)
+            },
+            changetitlecontent(){
+                this.titlecontent = this.titlecontent.substring(0,50)
+            },
+            getDetail(){
+                Service.article().getArticleDetail({},this.id).then(response => {
+                    if(response.errorCode==0){
+                        this.imageUrl = response.data.imageUrl;
+                        console.log(this.imageUrl )
+                        this.summary = response.data.summary;
+                        this.titlecontent = response.data.title;
+                        this.classify =  response.data.tagId.toString();
+                        this.data = {
+                                "author": response.data.author,
+                                "best": response.data.best,
+                                "categoryId": '',
+                                "content": response.data.content,
+                                "href": response.data.href,
+                                "imageUrl": this.imageUrl,
+                                "keywords": response.data.keywords,
+                                "source": response.data.source,
+                                "sourceUrl": response.data.sourceUrl,
+                                "status": response.data.status,
+                                "summary": this.summary,
+                                "tagId": this.classify,
+                                "title":  this.titlecontent,
+                                "top": response.data.top
+                        }
+                    }
+                }, err => {
+                });
+            },
             getArticleImg(status){
                 return Filter.getArticleImg(status)
             },
@@ -373,33 +428,60 @@
             },
 
             saveNews(){//保存公司动态
-                this.$router.push({name:'backnews'})
                 if(this.titlecontent.length == 0){
                     this.$message.warning('请输入动态标题');
                     return;
                 }
-                if(this.newsTime == '' || this.newsTime == null){
-                    this.$message.warning('请选择动态时间');
+                if(this.classify == ''){
+                    this.$message.warning('请选择文章分类');
                     return;
                 }
                 if(this.imageUrl == '' || this.imageUrl == null){
                     this.$message.warning('请上传封面图片');
                     return;
                 }
-                if(this.textarea == ''){
+                if(this.summary == ''){
                     this.$message.warning('请输入摘要内容');
                     return;
                 }
-                if(this.jumplink == '2'){
-                    if(this.$refs.ueditor.getUEContent() == ''){
-                        this.$message.warning('请输入摘要内容');
-                    }
+                if(this.$refs.ueditor.getUEContent() == ''){
+                    this.$message.warning('请输入正文内容');
                     return;
                 }
-
+                if(this.source == 'healthinquiry'){
+                    this.data.categoryId = 1;
+                }else if( this.source == 'healthnews'){
+                    this.data.categoryId = 2;
+                }else if( this.source == 'healthvoice'){
+                    this.data.categoryId = 3;
+                }
+                this.data.imageUrl = this.imageUrl;
+                this.data.summary = this.summary;
+                this.data.content = this.$refs.ueditor.getUEContent();
+                this.data.tagId = this.classify;
+                this.data.title = this.titlecontent;
+                this.data.status = 0;
+                if(this.id){
+                    Service.article().editorArticle(this.data,this.id).then(response => {
+                        console.log(response)
+                        if(response.errorCode == 0){
+                            this.$router.push({name:this.source})
+                            localStorage.removeItem('type')
+                        }
+                    }, err => {
+                    });
+                }else{
+                    Service.article().addArticle(this.data).then(response => {
+                        if(response.errorCode == 0){
+                            this.$router.push({name:this.source})
+                            localStorage.removeItem('type')
+                        }
+                    }, err => {
+                    });
+                }
             },
             cancleImg(){
-
+                this.$router.push({'name':source})
             },
             preview(){
                 localStorage.setItem('contentnews',JSON.stringify(this.$refs.ueditor.getUEContent()))

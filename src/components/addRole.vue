@@ -98,7 +98,7 @@
                         </span>
                         <div class="treeData">
                             <el-tree
-                                    :data="data"
+                                    :data="treedata"
                                     show-checkbox
                                     node-key="id"
                                     :default-expanded-keys="[2, 3]"
@@ -126,44 +126,7 @@
         name: "addrole",
         data() {
             return {
-                data: [{
-                    label: '一级 1',
-                    children: [{
-                        label: '二级 1-1',
-                        children: [{
-                            label: '三级 1-1-1'
-                        }]
-                    }]
-                }, {
-                    label: '一级 2',
-                    children: [{
-                        label: '二级 2-1',
-                        children: [{
-                            label: '三级 2-1-1'
-                        }]
-                    }, {
-                        label: '二级 2-2',
-                        children: [{
-                            label: '三级 2-2-1'
-                        }]
-                    }]
-                }, {
-                    label: '一级 3',
-                    children: [{
-                        label: '二级 3-1',
-                        children: [{
-                            label: '三级 3-1-1'
-                        }]
-                    }, {
-                        label: '二级 3-2',
-                        children: [{
-                            label: '三级 3-2-1'
-                        },
-                            {
-                                label: '三级 3-2-2'
-                            }]
-                    }]
-                }],
+                treedata: [],
                 defaultProps: {
                     children: 'children',
                     label: 'label'
@@ -191,14 +154,10 @@
         },
         mounted(){
             var width = $(".addRole").width();
-            console.log(width)
             var left = 0.5*(width - 600);
-            console.log(left)
-
             var height = document.body.offsetHeight,
                 scrollTop = document.body.scrollTop,
                 top = 0.5*(height-scrollTop-550);
-            console.log(height,scrollTop)
             $('.dialogcontent').css({"left":left,'top': top})
         },
         methods: {
@@ -208,6 +167,11 @@
                 }else{
                     this.title = '新建角色'
                 }
+                Service.role().resourceTree().then(response => {
+                    console.log(response.data)
+                    this.treedata = response.data
+                }, err => {
+                });
             },
             handleNodeClick(data) {
                 console.log(data);

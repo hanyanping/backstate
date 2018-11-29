@@ -43,6 +43,8 @@ function successState(response) {
             Message.error(response.data.message);
         } else if (response.data.errorCode == 5001) {
             window.location.href=  document.location.protocol + '//' + window.location.host + '/login'
+        }else{
+            Message.error(response.data.message)
         }
     } else {
         Message.error('网络请求错误');
@@ -262,6 +264,12 @@ export default {
                     method: 'get'
                 }, data)
             },
+            resourceTree: function (data) {
+                return getResource({
+                    url: 'sys/admin/resource/tree',
+                    method: 'get'
+                }, data)
+            },
         }
     },
     article(){
@@ -270,6 +278,42 @@ export default {
                 return getResource({
                     url: '/sys/admin/article',
                     method: 'get'
+                }, data)
+            },
+            removeArticle: function (data,key) {
+                return getResource({
+                    url: `/sys/admin/article/${key}/remove`,
+                    method: 'POST'
+                }, data)
+            },
+            deleteArticle: function (data,key) {
+                return getResource({
+                    url: `/sys/admin/article/${key}`,
+                    method: 'DELETE'
+                }, data)
+            },
+            publishArticle: function (data,key) {
+                return getResource({
+                    url: `sys/admin/article/${key}/publish`,
+                    method: 'POST'
+                }, data)
+            },
+            getArticleDetail: function (data,key) {
+                return getResource({
+                    url: `/sys/admin/article/${key}`,
+                    method: 'get'
+                }, data)
+            },
+            editorArticle: function (data,key) {
+                return getResource({
+                    url: `/sys/admin/article/${key}`,
+                    method: 'POST'
+                }, data)
+            },
+            addArticle: function (data,key) {
+                return getResource({
+                    url: `/sys/admin/article`,
+                    method: 'POST'
                 }, data)
             },
         }

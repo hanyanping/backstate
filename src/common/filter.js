@@ -32,6 +32,7 @@ const getRelationStatus = (status) => {
 };
 const getArticleImg = (status) => {
     let imgSrc = '';
+    console.log(typeof status)
     switch (status) {
         case 1:
             imgSrc = require('../assets/images/zhongyi.png');
@@ -55,6 +56,10 @@ const getArticleImg = (status) => {
             imgSrc = require( '../assets/images/yuer.png')
             break;
         case 8:
+            console.log(status)
+            imgSrc = require( '../assets/images/jiankang.png');
+            break
+        default:
             imgSrc = require( '../assets/images/jiankang.png');
             break
     }

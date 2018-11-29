@@ -158,11 +158,19 @@
             <div class="contanter">
                 <div class="hometitle">新闻资讯</div>
                 <div class="bannerTable">
-                    <el-tabs :tab-position="tabPosition" v-model="activeName" @tab-click="handleClick">
+                    <el-tabs :tab-position="tabPosition" v-model="status" @tab-click="handleClick">
                         <el-tab-pane label="已发布文章">
                             <div class="searchbox">
                                 <div class="inputBox">文章编号 : <input type="text" v-model='articleId' placeholder="请输入文章编号"/></div>
                                 <div class="inputBox">文章标题 : <input type="text" v-model='title' placeholder="请输入文章标题"/></div>
+                                <div class="inputBox">文章分类 : <el-select v-model="fenlei" placeholder="请选择文章分类">
+                                    <el-option
+                                            v-for="item in options"
+                                            :key="item.value"
+                                            :label="item.label"
+                                            :value="item.value">
+                                    </el-option>
+                                </el-select></div>
                                 <div class="inputBox">发布时间 :
                                     <el-date-picker
                                             @change="startdateChange"
@@ -181,14 +189,87 @@
                                             value-format="yyyy-MM-dd">
                                     </el-date-picker>
                                 </div>
-                                <div class="inputBox">文章分类 : <el-select v-model="fenlei" placeholder="请选择文章分类">
-                                    <el-option
-                                            v-for="item in options"
-                                            :key="item.value"
-                                            :label="item.label"
-                                            :value="item.value">
-                                    </el-option>
-                                </el-select></div>
+
+                                <div class="inputBox">文章摘要 : <input type="text"  v-model="summary" placeholder="请输入文章摘要"/></div>
+                                <div class="searchButton cursor" @click="searchAlready">查询</div>
+                                <div class="searchButton cursor" @click="editorBanner('new','healthinquiry','')">新添文章</div>
+                            </div>
+                            <div v-if="noData" class="tableBox">
+                                <table class="table">
+                                    <tr>
+                                        <th>编号</th>
+                                        <th>封面</th>
+                                        <th>文章标题</th>
+                                        <th>文章分类</th>
+                                        <th>文章摘要</th>
+                                        <th>发表时间</th>
+                                        <th>操作</th>
+                                    </tr>
+                                    <tr v-for="(item,index) in tableData">
+                                        <td>{{item.id}}</td>
+                                        <td>
+                                            <div class='back' :style="{backgroundImage: 'url(' + item.imageUrl + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}"></div>
+                                        </td>
+                                        <td>{{item.title}}</td>
+                                        <td>{{getArticleTitle(item.tagId)}}</td>
+                                        <td>{{item.summary}}</td>
+                                        <td v-if="item.publishDate">{{timetrans(item.publishDate)}}</td>
+                                        <td v-if="!item.publishDate">暂无</td>
+                                        <td>
+                                            <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>
+                                            <img @click="editorBanner('editor','healthinquiry',item.id)" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
+                                            <span class="deleteText warmtext" v-if="item.isDelete" >移除</span>
+                                            <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="removeArticle(item.id)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <div class="block">
+                                    <el-pagination
+                                            @size-change="handleSizeChange"
+                                            @current-change="handleCurrentChange"
+                                            :current-page.sync="page"
+                                            :page-size="size"
+                                            :page-sizes="[10,20]"
+                                            layout="total,sizes, prev, pager, next,jumper"
+                                            :total="total">
+                                    </el-pagination>
+                                </div>
+                            </div>
+                            <div v-if="!noData" class="noData">暂无数据</div>
+                        </el-tab-pane>
+                        <el-tab-pane label="已移除">
+                            <div  class="searchbox">
+                                <div class="inputBox">文章编号 : <input type="text" v-model='articleId' placeholder="请输入文章编号"/></div>
+                                <div class="inputBox">文章标题 : <input type="text" v-model='title' placeholder="请输入文章标题"/></div>
+                                <div class="inputBox">文章分类 :
+                                    <el-select v-model="fenlei" placeholder="请选择文章分类">
+                                        <el-option
+                                                v-for="item in options"
+                                                :key="item.value"
+                                                :label="item.label"
+                                                :value="item.value">
+                                        </el-option>
+                                    </el-select>
+                                </div>
+                                <div class="inputBox">发布时间 :
+                                    <el-date-picker
+                                            @change="startdateChange"
+                                            v-model="startTime"
+                                            type="date"
+                                            placeholder="选择开始时间"
+                                            format="yyyy-MM-dd"
+                                            value-format="yyyy-MM-dd">
+                                    </el-date-picker>
+                                    <el-date-picker
+                                            @change="enddateChange"
+                                            v-model="endTime"
+                                            type="date"
+                                            placeholder="选择结束时间"
+                                            format="yyyy-MM-dd"
+                                            value-format="yyyy-MM-dd">
+                                    </el-date-picker>
+                                </div>
+
                                 <div class="inputBox">文章摘要 : <input type="text"  v-model="summary" placeholder="请输入文章摘要"/></div>
                                 <div class="searchButton cursor" @click="searchAlready">查询</div>
                             </div>
@@ -214,10 +295,10 @@
                                         <td v-if="item.publishDate">{{timetrans(item.publishDate)}}</td>
                                         <td v-if="!item.publishDate">暂无</td>
                                         <td>
-                                            <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>
-                                            <img @click='editorBanner(item.id)' @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
+                                            <span class=" warmtext" v-if="item.ispublish">发布</span>
+                                            <img class="publishimg imgicon cursor" @click="publishArticle(item.id)" @mouseenter="enterStyleone(item)" @mouseleave='leaveStyleone(item)' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/jinlingyingcaiwangtubiao97.png">
                                             <span class="deleteText warmtext" v-if="item.isDelete" >删除</span>
-                                            <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
+                                            <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteArticle(item.id)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                                         </td>
                                     </tr>
                                 </table>
@@ -235,78 +316,10 @@
                             </div>
                             <div v-if="!noData" class="noData">暂无数据</div>
                         </el-tab-pane>
-                        <el-tab-pane label="已移除">
-                            <div class="searchbox">
-                                <div class="inputBox">文章编号 : <input type="text" placeholder="请输入文章编号"/></div>
-                                <div class="inputBox">文章标题 : <input type="text" placeholder="请输入文章标题"/></div>
-                                <div class="inputBox">发布时间 :
-                                    <el-date-picker
-                                            v-model="selectTime"
-                                            type="daterange"
-                                            range-separator="至"
-                                            start-placeholder="开始日期"
-                                            end-placeholder="结束日期">
-                                    </el-date-picker>
-                                </div>
-                                <div class="inputBox">文章分类 : <el-select v-model="fenlei" placeholder="请选择文章分类">
-                                    <el-option
-                                            v-for="item in options"
-                                            :key="item.value"
-                                            :label="item.label"
-                                            :value="item.value">
-                                    </el-option>
-                                </el-select></div>
-                                <div class="inputBox">文章摘要 : <input type="text" placeholder="请输入文章摘要"/></div>
-                                <div class="searchButton cursor">查询</div>
-                            </div>
-                            <div class="tableBox">
-                                <table class="table">
-                                    <tr>
-                                        <th>编号</th>
-                                        <th>封面</th>
-                                        <th>文章标题</th>
-                                        <th>文章分类</th>
-                                        <th>文章摘要</th>
-                                        <th>发表时间</th>
-                                        <th>操作</th>
-                                    </tr>
-                                    <tr v-for="(item,index) in tableData">
-                                        <td>{{index}}</td>
-                                        <td>
-                                            <div class='back' :style="{backgroundImage: 'url(' + item.imageUrl + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}"></div>
-                                        </td>
-                                        <td>{{item.title}}</td>
-                                        <td>getArticleTitle(item.tagId)</td>
-                                        <td>{{item.summary}}</td>
-                                        <td v-if="item.publishDate">{{timetrans(item.publishDate)}}</td>
-                                        <td v-if="!item.publishDate">暂无</td>
-                                        <td>
-                                            <span class=" warmtext" v-if="item.ispublish">发布</span>
-                                            <img class="publishimg imgicon cursor" @mouseenter="enterStyleone(item)" @mouseleave='leaveStyleone(item)' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/jinlingyingcaiwangtubiao97.png">
-                                            <span class="deleteText warmtext" v-if="item.isDelete" >删除</span>
-                                            <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
-                                        </td>
-                                    </tr>
-                                </table>
-                                <div class="block">
-                                    <el-pagination
-                                            @size-change="handleSizeChange"
-                                            @current-change="handleCurrentChange"
-                                            :current-page.sync="page"
-                                            :page-size="100"
-                                            :page-sizes="[4]"
-                                            layout="total,sizes, prev, pager, next"
-                                            :total="1000">
-                                    </el-pagination>
-                                </div>
-                            </div>
-                        </el-tab-pane>
                     </el-tabs>
 
                 </div>
             </div>
-            <Addbanner v-if='showAddbanner' @clickbanner="getBanner"></Addbanner>
-            <Deletebanner v-if='showDeletebanner' @clickbanner="getBanner"></Deletebanner>
         </div>
     </div>
 </template>
@@ -314,15 +327,12 @@
 <script>
     import Aside from '../components/aside'
     import Headercontent from '../components/headercontent'
-    import Addbanner from '../components/addbanner'
-    import  Deletebanner from '../components/deletebanner'
     import Service from '../common/service'
     import Filter from '../common/filter'
     export default {
         name: "healthinquiry",
         data() {
             return {
-                activeName:'0',
                 status: 0,
                 articleId: '',
                 summary: '',
@@ -372,18 +382,84 @@
                 showEditornews: false,
                 tableData: [],
                 noData:false,
+                permissions: [],
+                userInfo: '',
             };
         },
         created(){
-            this.searchAlready()
+            this.searchAlready();
+            this.userInfo = JSON.parse(localStorage.getItem('user'));
+            if(this.userInfo){
+                this.permissions = this.userInfo.permissions;
+            }
         },
         methods:{
+            judgeArr(arr,value){
+                var num = 0;
+                for(var i=0;i<arr.length;i++){
+                    if(arr[i] == value){
+                    }else{
+                        num++;
+                    }
+                }
+                return num
+            },
+            publishArticle(id){//发布
+                var num = this.judgeArr(this.permissions,'article:publish')
+                if(num<this.permissions.length){
+                    Service.article().publishArticle({},id).then(response => {
+                        if(response.errorCode==0){
+                            this.$message.success('发布成功');
+                            this.searchAlready();
+                        }
+                    }, err => {
+                    });
+                }else{
+                    this.$message.error('您暂无此权限')
+                }
+            },
+            removeArticle(id){//移除
+                var num = this.judgeArr(this.permissions,'article:remove')
+                if(num<this.permissions.length){
+                    Service.article().removeArticle({},id).then(response => {
+                        if(response.errorCode==0){
+                            this.$message.success('移除成功');
+                            this.searchAlready();
+                        }
+                    }, err => {
+                    });
+                }else{
+                    this.$message.error('您暂无此权限')
+                }
+            },
+            deleteArticle(id){
+                var num = this.judgeArr(this.permissions,'article:delete')
+                if(num<this.permissions.length){
+                    Service.article().deleteArticle({},id).then(response => {
+                        if(response.errorCode==0){
+                            this.$message.success('删除成功');
+                            this.searchAlready();
+                        }
+                    }, err => {
+                    });
+                }else{
+                    this.$message.error('您暂无此权限')
+                }
+
+            },
             getArticleTitle(status){
                 return Filter.getArticleStatus(status)
             },
             handleClick(tab, event) {
-                console.log(tab);
-                console.log(this.activeName);
+                this.page = 1;
+                this.size = 10;
+                this.articleId = '';
+                this.title = '';
+                this.summary = '';
+                this.startTime = '';
+                this.endTime = '';
+                this.fenlei = '';
+                this.searchAlready();
             },
             timetrans(timestamp) {//初始化时间
                 var getSeconds = '', getMinutes = '', getHours = '';
@@ -426,7 +502,6 @@
                 });
             },
             startdateChange(val){
-                console.log(val)
                 this.compare()
             },
             enddateChange(val){
@@ -469,43 +544,31 @@
                 this.$forceUpdate()
             },
             handleSizeChange(val) {
-                console.log(`每页 ${val} 条`);
                 this.size = val;
                 this.searchAlready();
             },
             handleCurrentChange(val) {
-                console.log(`当前页: ${val}`);
                 this.page = val;
                 this.searchAlready();
             },
-            addBanner(){
-                this.showEditornews = true;
-            },
-            editorBanner(type,id){
+            editorBanner(type,source,id){
                 // this.showEditornews = true;
-                localStorage.setItem('type', type)
-                this.$router.push({'name':'editorarticle',query:{id: id}})
+                if(type == 'editor'){
+                    var num = this.judgeArr(this.permissions,'article:edit')
+                }else{
+                    var num = this.judgeArr(this.permissions,'article:add')
+                }
+                if(num<this.permissions.length){
+                    localStorage.setItem('type',type)
+                    this.$router.push({'path':'/editorarticle',query:{id: id,source:source}})
+                }else{
+                    this.$message.error('您暂无此权限')
+                }
             },
-            deleteBanner(){
-                this.showDeletebanner = true;
-            },
-            getBanner(str){
-                if(str == 'addphotos'){
-                    this.showAddbanner = false;
-                }
-                if(str == 'editornews'){
-                    this.showEditornews = false;
-                }
-                if(str == 'deletephotos'){
-                    this.showDeletebanner = false;
-                }
-            }
         },
         components:{
             Aside,
             Headercontent,
-            Addbanner,
-            Deletebanner
         },
     }
 </script>

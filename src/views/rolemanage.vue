@@ -93,7 +93,7 @@
             <div class="contanter">
                 <div class="hometitle">角色管理</div>
                 <div class="bannerTable">
-                    <div class="tableBox">
+                    <div v-if="noData" class="tableBox">
                         <table class="table">
                             <tr>
                                 <th>员工角色</th>
@@ -218,21 +218,23 @@
             },
             getRoleData(){
                 Service.role().getRoles({page:this.page,size: this.size}).then(response => {
-                    if(response.data.records.length!=0){
-                        this.noData = true;
-                        for(let i in response.data.records){
-                            response.data.records[i].ispublish = false;
-                            response.data.records[i].isEditor = false;
-                            response.data.records[i].isDelete = false;
-                            response.data.records[i].upicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangyi.png';
-                            response.data.records[i].downicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xiayi.png';
+                    if(response.errorCode == 0){
+                        if(response.data.records.length!=0){
+                            this.noData = true;
+                            for(let i in response.data.records){
+                                response.data.records[i].ispublish = false;
+                                response.data.records[i].isEditor = false;
+                                response.data.records[i].isDelete = false;
+                                response.data.records[i].upicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangyi.png';
+                                response.data.records[i].downicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xiayi.png';
+                            }
+                            this.total = response.data.total;
+                            this.$nextTick(()=>{
+                                this.tableData = response.data.records;
+                            })
+                        }else{
+                            this.noData = false;
                         }
-                        this.total = response.data.total;
-                        this.$nextTick(()=>{
-                            this.tableData = response.data.records;
-                        })
-                    }else{
-                        this.noData = false;
                     }
                 }, err => {
                 });
