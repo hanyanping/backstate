@@ -82,7 +82,7 @@
                 <div class="imgContent">
                     <div class="lianjie">
                         <span class='labletext' >角色名称 : </span>
-                        <input type="text" placeholder="请输入角色名称">
+                        <input type="text" @keyup="changeName" v-model='name' placeholder="请输入角色名称">
                     </div>
                     <div class="lianjie juese" >
                         <span class='labletext'>角色描述 : </span>
@@ -90,7 +90,8 @@
                                 type="textarea"
                                 :rows="5"
                                 placeholder="至多输入50个汉字"
-                                v-model="textarea">
+                                @keyup.native='changeDescription'
+                                v-model="description">
                         </el-input>
                     </div>
                     <div class="lianjie juese">
@@ -98,11 +99,12 @@
                         </span>
                         <div class="treeData">
                             <el-tree
+                                    ref="roles"
                                     :data="treedata"
                                     show-checkbox
                                     node-key="id"
-                                    :default-expanded-keys="[2, 3]"
-                                    :default-checked-keys="[5]"
+                                    :check-strictly="true"
+                                    :default-checked-keys="permissions"
                                     :props="defaultProps">
                             </el-tree>
                         </div>
@@ -121,36 +123,44 @@
     import axios from 'axios'
     import Aside from './aside'
     import Util from '../common/util'
+    import PatternRules from '../common/patternRules'
     import Service from '../common/service'
     export default {
         name: "addrole",
         data() {
             return {
                 treedata: [],
+                name: '',
                 defaultProps: {
                     children: 'children',
                     label: 'label'
                 },
                 checked: [],
-                textarea: '',
+                description: '',
                 dialogImageUrl: '',
                 dialogVisible: false,
                 imgUrl: '',
                 radio: '1',
                 publish: '1',
                 title: '',
+                permissions: []
             };
         },
         props:{
             "id":{
-                type: String
+                type: Number
             }
         },
         created(){
             this.getRole()
         },
         watch:{
-
+            'name'(){
+                this.name = this.name.substring(0,8)
+            },
+            'description'(){
+                this.description = this.description.substring(0,50)
+            }
         },
         mounted(){
             var width = $(".addRole").width();
@@ -161,6 +171,15 @@
             $('.dialogcontent').css({"left":left,'top': top})
         },
         methods: {
+            changeName(){
+                if(!((PatternRules.name).test(this.name))){
+                    this.$message.warning('请输入中文');
+                    return
+                }
+            },
+            changeDescription(){
+                this.description = this.description.substring(0,50)
+            },
             getRole(){
                 if(this.id){
                     this.title='编辑角色';
@@ -169,7 +188,19 @@
                 }
                 Service.role().resourceTree().then(response => {
                     console.log(response.data)
-                    this.treedata = response.data
+                    this.treedata = response.data;
+                    if(this.id){
+                        this.getDetail()
+                    }
+                }, err => {
+                });
+            },
+            getDetail(){
+                Service.role().getDetailrole({},this.id).then(response => {
+                    console.log(response.data)
+                    this.permissions = response.data.permissions;
+                    this.name = response.data.name;
+                    this.description = response.data.description;
                 }, err => {
                 });
             },
@@ -184,7 +215,44 @@
                 });
             },
             sureImg(){
-                this.$emit('clickbanner', 'sure')
+                if(this.name == ''|| this.name.length<2 || this.name == null){
+                    this.$message.warning('请输入不少于2位的中文角色名称');
+                    return;
+                }
+                console.log(this.description)
+                if(this.description == '' || this.description.length>50 || this.description == null){
+                    this.$message.warning('请输入不多于50位的描述');
+                    return;
+                }
+                if(this.$refs.roles.getCheckedKeys().length == 0){
+                    this.$message.warning('请勾选角色权限');
+                    return;
+                }
+                console.log(this.$refs.roles.getCheckedKeys());
+                if(this.id){
+                    Service.role().editorRole({
+                        "description": this.description,
+                        "name": this.name,
+                        "permissions": this.$refs.roles.getCheckedKeys(),
+                        "sort": 0,
+                        "status": 0
+                    },this.id).then(response => {
+                        this.$emit('clickbanner', 'sure')
+                    }, err => {
+                    });
+                }else{
+                    Service.role().addRole({
+                        "description": this.description,
+                        "name": this.name,
+                        "permissions": this.$refs.roles.getCheckedKeys(),
+                        "sort": 0,
+                        "status": 0
+                    }).then(response => {
+                        this.$emit('clickbanner', 'sure')
+                    }, err => {
+                    });
+                }
+
             },
             cancleImg(){
                 this.$emit('clickbanner', 'cancel')

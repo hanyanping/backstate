@@ -256,22 +256,6 @@ export default {
             },
         }
     },
-    role(){
-        return{
-            getRoles: function (data) {
-                return getResource({
-                    url: '/sys/admin/role',
-                    method: 'get'
-                }, data)
-            },
-            resourceTree: function (data) {
-                return getResource({
-                    url: 'sys/admin/resource/tree',
-                    method: 'get'
-                }, data)
-            },
-        }
-    },
     article(){
         return{
             getinquiry: function (data) {
@@ -317,6 +301,86 @@ export default {
                 }, data)
             },
         }
+    },
+    role(){
+        return{
+            getRoles: function (data) {
+                return getResource({
+                    url: '/sys/admin/role',
+                    method: 'get'
+                }, data)
+            },
+            resourceTree: function (data) {
+                return getResource({
+                    url: 'sys/admin/resource/tree',
+                    method: 'get'
+                }, data)
+            },
+            getDetailrole: function (data,key) {
+                return getResource({
+                    url: `sys/admin/role/${key}`,
+                    method: 'GET'
+                }, data)
+            },
+            editorRole: function (data,key) {
+                return getResource({
+                    url: `sys/admin/role/${key}`,
+                    method: 'POST'
+                }, data)
+            },
+            addRole: function (data,key) {
+                return getResource({
+                    url: `/sys/admin/role`,
+                    method: 'POST'
+                }, data)
+            },
+            deleteRole: function (data,key) {
+                return getResource({
+                    url: `sys/admin/role/${key}`,
+                    method: 'DELETE'
+                }, data)
+            },
+        }
+    },
+    staf(){
+      return{
+          getstafs: function (data) {
+              return getResource({
+                  url: '/sys/admin/user',
+                  method: 'get'
+              }, data)
+          },
+          addStaf: function (data) {
+              return getResource({
+                  url: '/sys/admin/user',
+                  method: 'POST'
+              }, data)
+          },
+          editorStaf: function (data,key) {
+              return getResource({
+                  url: `/sys/admin/user/${key}`,
+                  method: 'POST'
+              }, data)
+          },
+          getDetailstaf: function (data,key) {
+              return getResource({
+                  url: `sys/admin/user/${key}`,
+                  method: 'GET'
+              }, data)
+          },
+          deleteStaf: function (data,key) {
+              return getResource({
+                  url: `sys/admin/user/${key}`,
+                  method: 'DELETE'
+              }, data)
+          },
+          getAllRole: function (data) {
+              return getResource({
+                  url: '/sys/admin/role/all',
+                  method: 'get'
+              }, data)
+          },
+      }
     },
     common() {
         return {

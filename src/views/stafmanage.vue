@@ -112,18 +112,20 @@
                             </tr>
                             <tr v-for="(item,index) in tableData">
                                 <td>
-                                    {{item.phone}}
+                                    {{item.username}}
                                 </td>
                                 <td>{{item.name}}</td>
-                                <td>{{item.email}}</td>
+                                <td v-if="item.email">{{item.email}}</td>
+                                <td v-if="!item.email">暂无</td>
                                 <td>{{item.addName}}</td>
-                                <td>{{item.authority}}</td>
-                                <td>{{item.state}}</td>
+                                <td v-if="item.description">{{item.description}}</td>
+                                <td v-if="!item.description">暂无</td>
+                                <td>{{timetrans(item.createDate)}}</td>
                                 <td>
                                     <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>
-                                    <img @click="addStaf('3')" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
+                                    <img @click="addStaf(item.id)" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
                                     <span class="deleteText warmtext" v-if="item.isDelete" >删除</span>
-                                    <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
+                                    <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteStaf(item.id)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                                 </td>
                             </tr>
 
@@ -132,11 +134,11 @@
                             <el-pagination
                                     @size-change="handleSizeChange"
                                     @current-change="handleCurrentChange"
-                                    :current-page.sync="currentPage"
-                                    :page-size="100"
-                                    :page-sizes="[4]"
-                                    layout="total,sizes, prev, pager, next"
-                                    :total="1000">
+                                    :current-page.sync="page"
+                                    :page-size="size"
+                                    :page-sizes="[5,10,20]"
+                                    layout="total, sizes, prev, pager, next, jumper"
+                                    :total="total">
                             </el-pagination>
                         </div>
                     </div>
@@ -145,8 +147,7 @@
                     </div>
                 </div>
             </div>
-            <Addstaf v-if='showAddstaf' :id="id" @clickstaf="getBanner"></Addstaf>
-            <Deletebanner v-if='showDeletebanner' @clickstaf="getBanner"></Deletebanner>
+            <Addstaf v-if='showAddstaf' :id="id" @clickstaf="getStaf"></Addstaf>
         </div>
     </div>
 </template>
@@ -155,21 +156,27 @@
     import Aside from '../components/aside'
     import Headercontent from '../components/headercontent'
     import Addstaf from '../components/addstaf'
-    import  Deletebanner from '../components/deletebanner'
+    import Service from '../common/service'
     export default {
         name: "home",
         data() {
             return {
                 id: '',
-                currentPage: 1,
-                showDeletebanner: false,
+                page: 1,
+                size: 10,
+                total: 1,
                 showAddstaf: false,
-                tableData: [
-                    ]
+                tableData: [],
+                userInfo:'',
+                permissions: [],
             };
         },
         created(){
-            this.getBanner();
+            this.userInfo = JSON.parse(localStorage.getItem('user'));
+            if(this.userInfo){
+                this.permissions = this.userInfo.permissions;
+            }
+            this.getStafdata();
         },
         methods:{
             enterStyletwo(item){
@@ -188,9 +195,30 @@
                 item.isDelete = false;
                 this.$forceUpdate()
             },
+            judgeArr(arr,value){
+                var num = 0;
+                for(var i=0;i<arr.length;i++){
+                    if(arr[i] == value){
+                    }else{
+                        num++;
+                    }
+                }
+                return num
+            },
             addStaf(id){
-                this.id = id;
-                this.showAddstaf = true;
+                if(id){
+                    var num = this.judgeArr(this.permissions,'user:edit')
+                }else{
+                    var num = this.judgeArr(this.permissions,'user:add')
+                }
+                if(num<this.permissions.length){
+                    this.id = id;
+                    console.log(this.id)
+                    this.showAddstaf = true;
+                }else{
+                    this.$message.error('您暂无此权限')
+                }
+
             },
             handleSizeChange(val) {
                 console.log(`每页 ${val} 条`);
@@ -198,61 +226,78 @@
             handleCurrentChange(val) {
                 console.log(`当前页: ${val}`);
             },
-            deleteBanner(){
-                this.showDeletebanner = true;
+            deleteStaf(id){
+                var num = this.judgeArr(this.permissions,'user:delete')
+                if(num<this.permissions.length){
+                    this.$confirm('是否删除此权限?', '', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        Service.staf().deleteStaf({},id).then(response => {
+                            if(response.errorCode == 0){
+                                this.getStafdata();
+                                this.$message({
+                                    type: 'success',
+                                    message: '删除成功!'
+                                });
+                            }
+                        }, err => {
+                        });
+
+                    }).catch(() => {
+                    });
+                }else{
+                    this.$message.error('您暂无此权限')
+                }
             },
-            getBanner(str){
+            timetrans(timestamp) {
+                var getSeconds = '', getMinutes = '', getHours = '';
+                var d = new Date(timestamp);
+                getHours = d.getHours() < 10 ? '0' + d.getHours() : d.getHours();
+                getMinutes = d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes()
+                getSeconds = d.getSeconds() < 10 ? '0' + d.getSeconds() : d.getSeconds()
+                var newTime = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() + ' ' + getHours + ':' + getMinutes + ':' + getSeconds;
+                return newTime
+            },
+            getStafdata(){
+                Service.staf().getstafs({page:this.page,size: this.size}).then(response => {
+                    if(response.errorCode == 0){
+                        if(response.data.records.length!=0){
+                            this.noData = true;
+                            for(let i in response.data.records){
+                                response.data.records[i].ispublish = false;
+                                response.data.records[i].isEditor = false;
+                                response.data.records[i].isDelete = false;
+                                response.data.records[i].upicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangyi.png';
+                                response.data.records[i].downicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xiayi.png';
+                            }
+                            this.total = response.data.total;
+                            this.$nextTick(()=>{
+                                this.tableData = response.data.records;
+                            })
+                        }else{
+                            this.noData = false;
+                        }
+                    }
+                }, err => {
+                });
+            },
+            getStaf(str){
+                console.log(str)
                 if(str == 'sure'){
                     this.showAddstaf = false;
-                    this.showDeletebanner = false;
+                    this.getStafdata();
                 }
-                if(str == 'cancel'){
+                if(str == 'cancle'){
                     this.showAddstaf = false;
-                    this.showDeletebanner = false;
                 }
-
-                var data = [{
-                    phone: '134556666666',
-                    name: '自己安康快乐',
-                    email:'485849595959@qq.com',
-                    addName: '长大就按',
-                    authority:'管理员，运营',
-                    state: '2018年10月20日'
-                },
-                    {
-                        phone: '134556666666',
-                        name: '自己安康快乐',
-                        email:'485849595959@qq.com',
-                        addName: '长大就按',
-                        authority:'管理员，运营',
-                        state: '2018年10月20日'
-                    },
-                    {
-                        phone: '134556666666',
-                        name: '自己安康快乐',
-                        email:'485849595959@qq.com',
-                        addName: '长大就按',
-                        authority:'管理员，运营',
-                        state: '2018年10月20日'
-                    }];
-
-                for(let i in data){
-                    data[i].ispublish = false;
-                    data[i].isEditor = false;
-                    data[i].isDelete = false;
-                    data[i].upicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangyi.png';
-                    data[i].downicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xiayi.png';
-                }
-                this.$nextTick(()=>{
-                    this.tableData = data;
-                })
             }
         },
         components:{
             Aside,
             Headercontent,
             Addstaf,
-            Deletebanner
         },
     }
 </script>

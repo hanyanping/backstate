@@ -90,22 +90,22 @@
                 <div class="imgContent">
                     <div class="lianjie">
                         <span class='labletext' >账号 : </span>
-                        <input type="text" placeholder="请输入员工登陆账号">
+                        <input type="tel" maxlength="11" v-model="username" placeholder="请输入员工登陆账号">
                     </div>
                     <div class="lianjie" >
                         <span class='labletext'>员工姓名 : </span>
-                        <input type="text" placeholder="请输入员工登陆账号">
+                        <input type="text" v-model="name" placeholder="请输入员工登陆账号">
                     </div>
                     <div class="lianjie">
                         <span class='labletext'>邮箱 : </span>
-                        <input type="text" placeholder="请输入员工邮箱">
+                        <input type="text" v-model="email" placeholder="请输入员工邮箱">
 
                     </div>
                     <div class="lianjie juese">
                         <span class='labletext'>角色 :
                         </span>
                         <el-checkbox-group v-model="checked">
-                            <el-checkbox class='checkbox' v-for="item in selectdata" :label="item" :key="item">{{item}}</el-checkbox>
+                            <el-checkbox class='checkbox' v-for="item in selectdata" :label="item.id" :key="item.id">{{item.name}}</el-checkbox>
                         </el-checkbox-group>
                     </div>
                     <div class="lianjie juese">
@@ -113,9 +113,7 @@
                         </span>
                         <div class="treeData">
                             <el-tree :data="data" :props="defaultProps" @node-click="handleNodeClick"></el-tree>
-
                         </div>
-
                     </div>
                 </div>
                 <div class="button">
@@ -131,11 +129,12 @@
     import axios from 'axios'
     import Aside from './aside'
     import Util from '../common/util'
+    import PatternRules from '../common/patternRules'
     import Service from '../common/service'
     export default {
         name: "addstaf",
         props: {id: {
-                type: String
+                type: Number
             }} ,
         data() {
             return {
@@ -180,20 +179,26 @@
                     label: 'label'
                 },
                 checked: [],
+                selectdata:[],
                 textarea: '',
-                selectdata:  ['管理员', '运营', '市场', '超级管理员'],
                 dialogImageUrl: '',
                 dialogVisible: false,
                 imgUrl: '',
                 radio: '1',
                 publish: '1',
+                username: '',
+                email: '',
+                name: '',
             };
         },
         created(){
-            this.getStaf()
+            this.getStaf();
+            this.getAllrole();
         },
         watch:{
-
+            'name'(){
+                this.name = this.name.substring(0,8)
+            }
         },
         mounted(){
             var width = $(".editorbanner").width();
@@ -204,12 +209,34 @@
             $('.dialogcontent').css({"left":left,'top': top})
         },
         methods: {
+            getAllrole(){
+                Service.staf().getAllRole().then(response => {
+                    console.log(response.data)
+                    this.selectdata = response.data;
+                    // this.treedata = response.data;
+
+                }, err => {
+                });
+            },
             getStaf(){
                 console.log(this.id)
                 if(this.id){
                    this.title = '编辑员工'
                 }else{
                     this.title = '添加员工'
+                }
+
+                if(this.id){
+                    Service.staf().getDetailstaf({},this.id).then(response => {
+                        console.log(response.data)
+                        this.username = response.data.username;
+                        this.name = response.data.name;
+                        this.email = response.data.email;
+
+                        // this.treedata = response.data;
+
+                    }, err => {
+                    });
                 }
             },
             handleNodeClick(data) {
@@ -223,7 +250,70 @@
                 });
             },
             sureImg(){
-                this.$emit('clickstaf', 'sure')
+                console.log(this.checked);
+                if(!this.username){
+                    this.$message.warning('请输入员工账号');
+                    return;
+                }
+                if(!(PatternRules.mobile.test(this.username))){
+                    this.$message.warning('请输入员工账号');
+                    return;
+                }
+                if(this.name == ''|| this.name.length<2 || this.name == null){
+                    this.$message.warning('请输入不少于2位的中文员工姓名');
+                    return;
+                }
+                if(!((PatternRules.name).test(this.name))){
+                    this.$message.warning('请输入中文姓名');
+                    return
+                }
+                if(!this.email){
+                    this.$message.warning('请输入正确邮箱');
+                    return;
+                }
+                if(!(PatternRules.mail.test(this.email))){
+                    this.$message.warning('请输入正确邮箱');
+                    return;
+                }
+
+                if(this.checked.length == 0){
+                    this.$message.warning('请勾选角色');
+                    return;
+                }
+                if(this.id){
+                    Service.staf().editorStaf({
+                        "description": "",
+                        "email": this.email,
+                        "name": this.name,
+                        "password": "",
+                        "phone": "",
+                        "roleIds":this.checked,
+                        "status": 0,
+                        "username": this.username
+                    },this.id).then(response => {
+                        if(response.errorCode == 0){
+                            this.$emit('clickstaf', 'sure')
+                        }
+                    }, err => {
+                    });
+                }else{
+                    Service.staf().addStaf({
+                        "description": "",
+                        "email": this.email,
+                        "name": this.name,
+                        "password": "",
+                        "phone": "",
+                        "roleIds":this.checked,
+                        "status": 0,
+                        "username": this.username
+                    }).then(response => {
+                        if(response.errorCode == 0){
+                            this.$emit('clickstaf', 'sure')
+                        }
+                    }, err => {
+                    });
+                }
+
             },
             cancleImg(){
                 this.$emit('clickstaf', 'cancle')

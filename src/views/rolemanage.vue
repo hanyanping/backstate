@@ -109,9 +109,9 @@
                                 <td>34</td>
                                 <td>
                                     <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>
-                                    <img @click="addRole('3')" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
+                                    <img @click="addRole(item.id)" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
                                     <span class="deleteText warmtext" v-if="item.isDelete" >删除</span>
-                                    <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
+                                    <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner(item.id)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                                 </td>
                             </tr>
 
@@ -121,7 +121,7 @@
                                     @size-change="handleSizeChange"
                                     @current-change="handleCurrentChange"
                                     :current-page.sync="page"
-                                    :page-size="100"
+                                    :page-size="size"
                                     :page-sizes="[5,10,20]"
                                     layout="total, sizes, prev, pager, next, jumper"
                                     :total="total">
@@ -135,7 +135,6 @@
                 </div>
             </div>
             <Addrole v-if='showAddrole' :id="id" @clickbanner="getRole"></Addrole>
-            <Deletebanner v-if='showDeletebanner' @clickbanner="getRole"></Deletebanner>
         </div>
     </div>
 </template>
@@ -144,7 +143,6 @@
     import Aside from '../components/aside'
     import Headercontent from '../components/headercontent'
     import Addrole from '../components/addRole'
-    import  Deletebanner from '../components/deletebanner'
     import Service from '../common/service'
     export default {
         name: "home",
@@ -154,7 +152,6 @@
                 page: 1,
                 size: 10,
                 total: 1,
-                showDeletebanner: false,
                 showAddrole: false,
                 showEditornews: false,
                 tableData: [
@@ -205,16 +202,62 @@
             },
             handleSizeChange(val) {
                 console.log(`每页 ${val} 条`);
+                this.size = val;
+                this.getRoleData();
             },
             handleCurrentChange(val) {
                 console.log(`当前页: ${val}`);
+                this.page = val;
+                this.getRoleData();
             },
             editorBanner(id){
-                this.id = id;
-                this.showAddrole = true;
+                if(id){
+                    var num = this.judgeArr(this.permissions,'role:edit')
+                }else{
+                    var num = this.judgeArr(this.permissions,'role:add')
+                }
+                if(num<this.permissions.length){
+                    this.id = id;
+                    this.showAddrole = true;
+                }else{
+                    this.$message.error('您暂无此权限')
+                }
             },
-            deleteBanner(){
-                this.showDeletebanner = true;
+            judgeArr(arr,value){
+                var num = 0;
+                for(var i=0;i<arr.length;i++){
+                    if(arr[i] == value){
+                    }else{
+                        num++;
+                    }
+                }
+                return num
+            },
+            deleteBanner(id){
+                var num = this.judgeArr(this.permissions,'role:delete')
+                if(num<this.permissions.length){
+                    this.$confirm('是否删除此权限?', '', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        Service.role().deleteRole({},id).then(response => {
+                            if(response.errorCode == 0){
+                                this.getRoleData();
+                                this.$message({
+                                    type: 'success',
+                                    message: '删除成功!'
+                                });
+                            }
+                        }, err => {
+                        });
+
+                    }).catch(() => {
+                    });
+                }else{
+                    this.$message.error('您暂无此权限')
+                }
+
             },
             getRoleData(){
                 Service.role().getRoles({page:this.page,size: this.size}).then(response => {
@@ -242,12 +285,10 @@
             getRole(str){
                 if(str == 'sure'){
                     this.showAddrole = false;
-                    this.showDeletebanner = false;
                     this.getRoleData()
                 }
                 if(str == 'cancel'){
                     this.showAddrole = false;
-                    this.showDeletebanner = false;
                 }
 
 
@@ -257,7 +298,6 @@
             Aside,
             Headercontent,
             Addrole,
-            Deletebanner
         },
     }
 </script>
