@@ -229,7 +229,7 @@
             deleteStaf(id){
                 var num = this.judgeArr(this.permissions,'user:delete')
                 if(num<this.permissions.length){
-                    this.$confirm('是否删除此权限?', '', {
+                    this.$confirm('是否删除?', '', {
                         confirmButtonText: '确定',
                         cancelButtonText: '取消',
                         type: 'warning'
