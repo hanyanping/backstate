@@ -1,7 +1,7 @@
 <style rel="stylesheet/scss" lang="scss"  scoped>
     .newscontent{
         display: flex;
-        min-height:calc(100vh - 70px);
+        min-height:calc(100vh - 50px);
         .contanternews{
             background: #f9f9f9;
             flex:1;
@@ -14,6 +14,7 @@
                 background: #fff;
                 width: 100%;
                 margin-top: 15px;
+                min-height: 80vh;
                 .noData{
                     text-align: center;
                     padding-top: 30px;
@@ -115,7 +116,7 @@
                                 <th>封面图</th>
                                 <th>标题</th>
                                 <th>动态时间</th>
-                                <th>操作</th>
+                                <th v-if="(hasDelete<permissions.length) || (hasEditor<permissions.length)">操作</th>
                             </tr>
                             <tr v-for="(item,index) in tableData">
                                 <td>
@@ -123,11 +124,11 @@
                                 </td>
                                 <td>{{item.title}}</td>
                                 <td>{{timetrans(item.time)}}</td>
-                                <td>
+                                <td v-if="(hasDelete<permissions.length) || (hasEditor<permissions.length)">
                                     <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>
-                                    <img @click="editorNews('editor',item.id)" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
+                                    <img @click="editorNews('editor',item.id)" v-if="hasEditor<permissions.length" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
                                     <span class="deleteText warmtext" v-if="item.isDelete" style="margin-left: -6px;">删除</span>
-                                    <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteNews(item.id,item.imageUrl)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
+                                    <img class="deletimg imgicon cursor" v-if="hasDelete<permissions.length" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteNews(item.id,item.imageUrl)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                                 </td>
 
                             </tr>
@@ -144,8 +145,9 @@
                             </el-pagination>
                         </div>
                     </div>
-                    <div v-if="!noData" class="noData">暂无数据</div>
-                    <div class="homebutton">
+                    <div v-if="!noData && noPermissions" class="noData">暂无数据</div>
+                    <div v-if="!noPermissions && !noData" class="noData">您暂无此权限</div>
+                    <div class="homebutton" v-if="hasAdd<permissions.length">
                         <span class="sureButton cursor" @click="editorNews('new','')">新建动态</span>
                     </div>
                 </div>
@@ -165,7 +167,11 @@
         name: "home",
         data() {
             return {
+                hasEditor: '',//编辑权限
+                hasDelete: '',//删除权限
+                hasAdd: '',//添加权限
                 noData: false,
+                noPermissions: false,
                 imageUrl:'',
                 id: '',
                 source: 'news',
@@ -181,11 +187,14 @@
             };
         },
         created(){
-            this.getNewData();
             this.userInfo = JSON.parse(localStorage.getItem('user'));
             if(this.userInfo){
                 this.permissions = this.userInfo.permissions;
             }
+            this.hasEditor = this.judgeArr(this.permissions,'news:edit');
+            this.hasDelete = this.judgeArr(this.permissions,'news:delete');
+            this.hasAdd = this.judgeArr(this.permissions,'news:add');
+            this.getNewData();
         },
         methods:{
             timetrans(timestamp) {
@@ -235,51 +244,41 @@
                 return num
             },
             editorNews(type,id){
-                if(type == 'editor'){
-                    var num = this.judgeArr(this.permissions,'news:edit')
-                }else{
-                    var num = this.judgeArr(this.permissions,'news:add')
-                }
-
-                if(num<this.permissions.length){
-                    localStorage.setItem('type', type)
-                    this.$router.push({'name':'editornews',query:{id: id}})
-                }else{
-                    this.$message.error('您暂无此权限')
-                }
+                localStorage.setItem('type', type)
+                this.$router.push({'name':'editornews',query:{id: id}})
             },
             deleteNews(id,imageUrl){
-                var num = this.judgeArr(this.permissions,'news:delete')
-                if(num<this.permissions.length){
-                    this.id = id;
-                    this.imageUrl = imageUrl;
-                    this.showDeletebanner = true;
-                }else{
-                    this.$message.error('您暂无此权限')
-                }
-
+                this.id = id;
+                this.imageUrl = imageUrl;
+                this.showDeletebanner = true;
             },
             getNewData(){
-                Service.news().getNews({page:this.page,size: this.size}).then(response => {
-                    if(response.data.records.length!=0){
-                        this.noData = true;
-                        for(let i in response.data.records){
-                            response.data.records[i].ispublish = false;
-                            response.data.records[i].isEditor = false;
-                            response.data.records[i].isDelete = false;
-                            response.data.records[i].upicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangyi.png';
-                            response.data.records[i].downicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xiayi.png';
+                var num = this.judgeArr(this.permissions,'news:view')
+                if(num<this.permissions.length){
+                    this.noPermissions = true;
+                    Service.news().getNews({page:this.page,size: this.size}).then(response => {
+                        if(response.data.records.length!=0){
+                            this.noData = true;
+                            for(let i in response.data.records){
+                                response.data.records[i].ispublish = false;
+                                response.data.records[i].isEditor = false;
+                                response.data.records[i].isDelete = false;
+                                response.data.records[i].upicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangyi.png';
+                                response.data.records[i].downicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xiayi.png';
+                            }
+                            this.total = response.data.total;
+                            this.$nextTick(()=>{
+                                this.tableData =  response.data.records;
+                            })
+                        }else{
+                            this.noData = false;
                         }
-                        this.total = response.data.total;
-                        this.$nextTick(()=>{
-                            this.tableData =  response.data.records;
-                        })
-                    }else{
-                        this.noData = false;
-                    }
+                    }, err => {
+                    });
+                }else{
+                    this.noPermissions = false;
+                }
 
-                }, err => {
-                });
             },
             getNews(str){
                 if(str == 'sure'){

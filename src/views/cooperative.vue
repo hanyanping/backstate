@@ -2,7 +2,7 @@
     .cooperative{
         .content{
             display: flex;
-            min-height:calc(100vh - 70px);
+            min-height:calc(100vh - 50px);
             .contanter{
                 background: #f9f9f9;
                 flex:1;
@@ -104,29 +104,30 @@
                         <tr>
                             <th>合作伙伴logo</th>
                             <th>排序</th>
-                            <th>操作</th>
+                            <th v-if="(hasEditor<permissions.length) || (hasDelete<permissions.length)">操作</th>
                         </tr>
                         <tr v-for="(item,index) in tableData">
                             <td>
                                 <div class='back' :style="{backgroundImage: 'url(' + item.imageUrl + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}"></div>
                             </td>
-                            <td>
+                            <td v-if="(hasSort<permissions.length)">
                                 <img class="upimg imgicon cursor" v-if="index!=0" @click='upSort(index)' :src="item.upicon">
                                 <img class="upimg imgicon " v-if="index==0" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangyigray.png">
                                 <img class='downimg imgicon cursor' @click='downSort(index)' v-if="index!=(tableData.length-1)" :src="item.downicon">
                                 <img class='downimg imgicon ' v-if="index==(tableData.length-1)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xiayigray.png">
                             </td>
-                            <td>
+                            <td v-if="(hasEditor<permissions.length) || (hasDelete<permissions.length)">
                                 <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>
-                                <img @click="editorLogo(item.id)" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
+                                <img @click="editorLogo(item.id)" v-if="(hasEditor<permissions.length)" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
                                 <span class="deleteText warmtext" v-if="item.isDelete">删除</span>
-                                <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deletePartner(item.id,item.imageUrl)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
+                                <img class="deletimg imgicon cursor" v-if="(hasDelete<permissions.length)" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deletePartner(item.id,item.imageUrl)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                             </td>
 
                         </tr>
                     </table>
-                    <div v-if="!noData" class="noData">暂无数据</div>
-                    <div class="homebutton">
+                    <div v-if="!noData && noPermissions" class="noData">暂无数据</div>
+                    <div v-if="!noPermissions && !noData" class="noData">您暂无此权限</div>
+                    <div class="homebutton" v-if="hasAdd<permissions.length">
                         <span class="sureButton cursor" @click="addLogo">添加logo</span>
                     </div>
                 </div>
@@ -149,6 +150,11 @@
         name: "cooperative",
         data() {
             return {
+                hasEditor: '',//编辑权限
+                hasDelete: '',//删除权限
+                hasAdd: '',//添加权限
+                hasSort: '',//排序权限
+                noPermissions: false,
                 imageUrl: '',
                 source: 'cooperative',
                 showDeletebanner: false,
@@ -167,48 +173,40 @@
             if(this.userInfo){
                 this.permissions = this.userInfo.permissions;
             }
+            this.hasEditor = this.judgeArr(this.permissions,'partner:edit');
+            this.hasDelete = this.judgeArr(this.permissions,'partner:delete');
+            this.hasAdd = this.judgeArr(this.permissions,'partner:add');
+            this.hasSort = this.judgeArr(this.permissions,'partner:sort');
             this.getCooperaData()
         },
         methods:{
             upSort(index){
-                var num = this.judgeArr(this.permissions,'advert:item:sort')
-                if(num<this.permissions.length){
-                    var temp = this.tableData[index-1];
-                    var data = this.tableData;
-                    data[index-1] = this.tableData[index];
-                    data[index] = temp;
-                    for(var i = 0;i<data.length;i++){
-                        var obj = {
-                            id: data[i].id,
-                            sort: i
-                        }
-                        this.changeData.push(obj)
+                var temp = this.tableData[index-1];
+                var data = this.tableData;
+                data[index-1] = this.tableData[index];
+                data[index] = temp;
+                for(var i = 0;i<data.length;i++){
+                    var obj = {
+                        id: data[i].id,
+                        sort: i
                     }
-                    this.itemSort()
-                }else{
-                    this.$message.error('您暂无此权限')
+                    this.changeData.push(obj)
                 }
-
+                this.itemSort()
             },
             downSort(index){
-                var num = this.judgeArr(this.permissions,'advert:item:sort')
-                if(num<this.permissions.length){
-                    var temp = this.tableData[index+1];
-                    var data = this.tableData;
-                    data[index+1] = this.tableData[index];
-                    data[index] = temp;
-                    for(var i = 0;i<data.length;i++){
-                        var obj = {
-                            id: data[i].id,
-                            sort: i
-                        }
-                        this.changeData.push(obj)
+                var temp = this.tableData[index+1];
+                var data = this.tableData;
+                data[index+1] = this.tableData[index];
+                data[index] = temp;
+                for(var i = 0;i<data.length;i++){
+                    var obj = {
+                        id: data[i].id,
+                        sort: i
                     }
-                    this.itemSort()
-                }else{
-                    this.$message.error('您暂无此权限')
+                    this.changeData.push(obj)
                 }
-
+                this.itemSort()
             },
             itemSort(){
                 Service.partner().partnerSort(this.changeData).then(response => {
@@ -237,13 +235,8 @@
                 this.showAddbanner = true;
             },
             editorLogo(id){
-                var num = this.judgeArr(this.permissions,'partner:edit')
-                if(num<this.permissions.length){
-                    this.id = id;
-                    this.showEditorlogo = true;
-                }else{
-                    this.$message.error('您暂无此权限')
-                }
+                this.id = id;
+                this.showEditorlogo = true;
             },
             judgeArr(arr,value){
                 var num = 0;
@@ -256,36 +249,37 @@
                 return num
             },
             deletePartner(id,imageUrl){
-                var num = this.judgeArr(this.permissions,'partner:delete')
-                if(num<this.permissions.length){
-                    this.showDeletebanner = true;
-                    this.id = id;
-                    this.imageUrl = imageUrl;
-                }else{
-                    this.$message.error('您暂无此权限')
-                }
+                this.showDeletebanner = true;
+                this.id = id;
+                this.imageUrl = imageUrl;
             },
             getCooperaData(){
-                Service.partner().getPartners().then(response => {
-                    if(response.errorCode == 0){
-                        if(response.data.length !=0){
-                            this.noData = true;
-                            for(let i in response.data){
-                                response.data[i].isEditor = false;
-                                response.data[i].isDelete = false;
-                                response.data[i].upicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangyi.png';
-                                response.data[i].downicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xiayi.png';
+                var num = this.judgeArr(this.permissions,'partner:view');
+                if(num<this.permissions.length){
+                    this.noPermissions = true;
+                    Service.partner().getPartners().then(response => {
+                        if(response.errorCode == 0){
+                            if(response.data.length !=0){
+                                this.noData = true;
+                                for(let i in response.data){
+                                    response.data[i].isEditor = false;
+                                    response.data[i].isDelete = false;
+                                    response.data[i].upicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangyi.png';
+                                    response.data[i].downicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xiayi.png';
+                                }
+                                this.$nextTick(()=>{
+                                    this.tableData = response.data;
+                                })
+                            }else{
+                                this.tableData = [];
+                                this.noData = false;
                             }
-                            this.$nextTick(()=>{
-                                this.tableData = response.data;
-                            })
-                        }else{
-                            this.tableData = [];
-                            this.noData = false;
                         }
-                    }
-                }, err => {
-                });
+                    }, err => {
+                    });
+                }else{
+                    this.noPermissions = false;
+                }
             },
             getCoopera(str){
                 if(str == 'sure'){

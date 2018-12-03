@@ -2,7 +2,7 @@
     .healthinquiry{
         .newscontent{
             display: flex;
-            min-height: 100vh;
+            min-height:calc(100vh - 50px);
             .contanter{
                 background: #f9f9f9;
                 flex:1;
@@ -15,6 +15,7 @@
                     background: #fff;
                     width: 100%;
                     margin-top: 15px;
+                    min-height: 80vh;
                     .searchbox{
                         display: flex;
                         padding: 10px 30px;
@@ -158,7 +159,7 @@
             <div class="contanter">
                 <div class="hometitle">新闻资讯</div>
                 <div class="bannerTable">
-                    <el-tabs :tab-position="tabPosition" v-model="status" @tab-click="handleClick">
+                    <el-tabs v-if="noPermissions" :tab-position="tabPosition" v-model="status" @tab-click="handleClick">
                         <el-tab-pane label="已发布文章">
                             <div class="searchbox">
                                 <div class="inputBox">文章编号 : <input type="text" v-model='articleId' placeholder="请输入文章编号"/></div>
@@ -192,7 +193,7 @@
 
                                 <div class="inputBox">文章摘要 : <input type="text"  v-model="summary" placeholder="请输入文章摘要"/></div>
                                 <div class="searchButton cursor" @click="searchAlready">查询</div>
-                                <div class="searchButton cursor" @click="editorBanner('new','healthinquiry','')">新添文章</div>
+                                <div class="searchButton cursor" v-if="(hasAdd<permissions.length)" @click="editorBanner('new','healthinquiry','')">新添文章</div>
                             </div>
                             <div v-if="noData" class="tableBox">
                                 <table class="table">
@@ -203,7 +204,7 @@
                                         <th>文章分类</th>
                                         <th>文章摘要</th>
                                         <th>发表时间</th>
-                                        <th>操作</th>
+                                        <th v-if="(hasEditor<permissions.length) || (hasRemove<permissions.length)">操作</th>
                                     </tr>
                                     <tr v-for="(item,index) in tableData">
                                         <td>{{item.id}}</td>
@@ -215,11 +216,11 @@
                                         <td>{{item.summary}}</td>
                                         <td v-if="item.publishDate">{{timetrans(item.publishDate)}}</td>
                                         <td v-if="!item.publishDate">暂无</td>
-                                        <td>
+                                        <td v-if="(hasEditor<permissions.length) || (hasRemove<permissions.length)">
                                             <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>
-                                            <img @click="editorBanner('editor','healthinquiry',item.id)" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
+                                            <img v-if="(hasEditor<permissions.length)" @click="editorBanner('editor','healthinquiry',item.id)" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
                                             <span class="deleteText warmtext" v-if="item.isDelete" >移除</span>
-                                            <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="removeArticle(item.id)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
+                                            <img v-if="(hasRemove<permissions.length)"  class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="removeArticle(item.id)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                                         </td>
                                     </tr>
                                 </table>
@@ -282,7 +283,7 @@
                                         <th>文章分类</th>
                                         <th>文章摘要</th>
                                         <th>发表时间</th>
-                                        <th>操作</th>
+                                        <th v-if="(hasPublish<permissions.length) || (hasDelete<permissions.length)">操作</th>
                                     </tr>
                                     <tr v-for="(item,index) in tableData">
                                         <td>{{item.id}}</td>
@@ -294,11 +295,11 @@
                                         <td>{{item.summary}}</td>
                                         <td v-if="item.publishDate">{{timetrans(item.publishDate)}}</td>
                                         <td v-if="!item.publishDate">暂无</td>
-                                        <td>
+                                        <td v-if="(hasPublish<permissions.length) || (hasDelete<permissions.length)">
                                             <span class=" warmtext" v-if="item.ispublish">发布</span>
-                                            <img class="publishimg imgicon cursor" @click="publishArticle(item.id)" @mouseenter="enterStyleone(item)" @mouseleave='leaveStyleone(item)' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/jinlingyingcaiwangtubiao97.png">
+                                            <img class="publishimg imgicon cursor" v-if="(hasPublish<permissions.length)" @click="publishArticle(item.id)" @mouseenter="enterStyleone(item)" @mouseleave='leaveStyleone(item)' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/jinlingyingcaiwangtubiao97.png">
                                             <span class="deleteText warmtext" v-if="item.isDelete" >删除</span>
-                                            <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteArticle(item.id)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
+                                            <img class="deletimg imgicon cursor" v-if="(hasDelete<permissions.length)"  @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteArticle(item.id)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                                         </td>
                                     </tr>
                                 </table>
@@ -317,7 +318,7 @@
                             <div v-if="!noData" class="noData">暂无数据</div>
                         </el-tab-pane>
                     </el-tabs>
-
+                    <div v-if="!noPermissions" class="noData">您暂无此权限</div>
                 </div>
             </div>
         </div>
@@ -333,6 +334,11 @@
         name: "healthinquiry",
         data() {
             return {
+                hasEditor: '',//编辑权限
+                hasDelete: '',//删除权限
+                hasAdd: '',//添加权限
+                hasRemove: '',//移除权限
+                hasPublish: '',//发布权限
                 status: 0,
                 articleId: '',
                 summary: '',
@@ -381,17 +387,24 @@
                 showAddbanner: false,
                 showEditornews: false,
                 tableData: [],
+                noPermissions: false,
                 noData:false,
                 permissions: [],
                 userInfo: '',
             };
         },
         created(){
-            this.searchAlready();
+
             this.userInfo = JSON.parse(localStorage.getItem('user'));
             if(this.userInfo){
                 this.permissions = this.userInfo.permissions;
             }
+            this.hasEditor = this.judgeArr(this.permissions,'article:edit');
+            this.hasDelete = this.judgeArr(this.permissions,'article:delete');
+            this.hasRemove = this.judgeArr(this.permissions,'article:remove');
+            this.hasAdd = this.judgeArr(this.permissions,'article:add');
+            this.hasPublish = this.judgeArr(this.permissions,'article:publish');
+            this.searchAlready();
         },
         methods:{
             judgeArr(arr,value){
@@ -405,47 +418,31 @@
                 return num
             },
             publishArticle(id){//发布
-                var num = this.judgeArr(this.permissions,'article:publish')
-                if(num<this.permissions.length){
-                    Service.article().publishArticle({},id).then(response => {
-                        if(response.errorCode==0){
-                            this.$message.success('发布成功');
-                            this.searchAlready();
-                        }
-                    }, err => {
-                    });
-                }else{
-                    this.$message.error('您暂无此权限')
-                }
+                Service.article().publishArticle({},id).then(response => {
+                    if(response.errorCode==0){
+                        this.$message.success('发布成功');
+                        this.searchAlready();
+                    }
+                }, err => {
+                });
             },
             removeArticle(id){//移除
-                var num = this.judgeArr(this.permissions,'article:remove')
-                if(num<this.permissions.length){
-                    Service.article().removeArticle({},id).then(response => {
-                        if(response.errorCode==0){
-                            this.$message.success('移除成功');
-                            this.searchAlready();
-                        }
-                    }, err => {
-                    });
-                }else{
-                    this.$message.error('您暂无此权限')
-                }
+                Service.article().removeArticle({},id).then(response => {
+                    if(response.errorCode==0){
+                        this.$message.success('移除成功');
+                        this.searchAlready();
+                    }
+                }, err => {
+                });
             },
             deleteArticle(id){
-                var num = this.judgeArr(this.permissions,'article:delete')
-                if(num<this.permissions.length){
-                    Service.article().deleteArticle({},id).then(response => {
-                        if(response.errorCode==0){
-                            this.$message.success('删除成功');
-                            this.searchAlready();
-                        }
-                    }, err => {
-                    });
-                }else{
-                    this.$message.error('您暂无此权限')
-                }
-
+                Service.article().deleteArticle({},id).then(response => {
+                    if(response.errorCode==0){
+                        this.$message.success('删除成功');
+                        this.searchAlready();
+                    }
+                }, err => {
+                });
             },
             getArticleTitle(status){
                 return Filter.getArticleStatus(status)
@@ -471,17 +468,20 @@
                 return newTime
             },
             searchAlready(){
-                if(this.startTime && this.endTime ){
-                    if(this.startTime>this.endTime){
-                        this.$message({
-                            message: '结束时间不可小于开始时间',
-                            type: 'warning'
-                        });
-                        return;
+                var num = this.judgeArr(this.permissions,'article:view');
+                if(num<this.permissions.length){
+                    this.noPermissions = true;
+                    if(this.startTime && this.endTime ){
+                        if(this.startTime>this.endTime){
+                            this.$message({
+                                message: '结束时间不可小于开始时间',
+                                type: 'warning'
+                            });
+                            return;
+                        }
                     }
-                }
-                Service.article().getinquiry({page:this.page,size: this.size,categoryId:1,id:this.articleId,title: this.title,summary: this.summary,
-                    startTime: this.startTime,endTime:this.endTime,tagId:this.fenlei,status: this.status}).then(response => {
+                    Service.article().getinquiry({page:this.page,size: this.size,categoryId:1,id:this.articleId,title: this.title,summary: this.summary,
+                        startTime: this.startTime,endTime:this.endTime,tagId:this.fenlei,status: this.status}).then(response => {
                         if(response.errorCode == 0){
                             if(response.data.records.length!=0){
                                 this.noData = true;
@@ -498,8 +498,12 @@
                                 this.noData = false;
                             }
                         }
-                }, err => {
-                });
+                    }, err => {
+                    });
+                }else{
+                    this.noPermissions = false;
+                }
+
             },
             startdateChange(val){
                 this.compare()
@@ -552,18 +556,8 @@
                 this.searchAlready();
             },
             editorBanner(type,source,id){
-                // this.showEditornews = true;
-                if(type == 'editor'){
-                    var num = this.judgeArr(this.permissions,'article:edit')
-                }else{
-                    var num = this.judgeArr(this.permissions,'article:add')
-                }
-                if(num<this.permissions.length){
-                    localStorage.setItem('type',type)
-                    this.$router.push({'path':'/editorarticle',query:{id: id,source:source}})
-                }else{
-                    this.$message.error('您暂无此权限')
-                }
+                localStorage.setItem('type',type)
+                this.$router.push({'path':'/editorarticle',query:{id: id,source:source}})
             },
         },
         components:{

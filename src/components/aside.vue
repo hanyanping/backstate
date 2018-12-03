@@ -15,7 +15,7 @@
                 .warmText{
                     position: absolute;
                     background: #000;
-                    color: #ffff;
+                    color: #fff;
                     display: inline-block;
                     height: 30px;
                     width: 40px;
@@ -105,6 +105,8 @@
         data(){
             return{
                 title:'内容管理',
+                userInfo:'',
+                permissions:[],
                 secondContent: [
                     {
                         title: '内容管理',

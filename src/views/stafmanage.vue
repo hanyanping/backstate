@@ -112,14 +112,14 @@
                             </tr>
                             <tr v-for="(item,index) in tableData">
                                 <td>
-                                    {{item.username}}
+                                    {{item.phone}}
                                 </td>
                                 <td>{{item.name}}</td>
                                 <td v-if="item.email">{{item.email}}</td>
                                 <td v-if="!item.email">暂无</td>
-                                <td>{{item.addName}}</td>
-                                <td v-if="item.description">{{item.description}}</td>
-                                <td v-if="!item.description">暂无</td>
+                                <td v-if="item.createBy">{{item.createBy}}</td>
+                                <td v-if="!item.createBy">暂无</td>
+                                <td ><span v-for="ite in item.roles">{{ite.name}}</span></td>
                                 <td>{{timetrans(item.createDate)}}</td>
                                 <td>
                                     <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>

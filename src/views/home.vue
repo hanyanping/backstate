@@ -1,7 +1,7 @@
 <style rel="stylesheet/scss" lang="scss"  scoped>
 .content{
     display: flex;
-    min-height:calc(100vh - 70px);
+    min-height:calc(100vh - 50px);
     .contanter{
         background: #f9f9f9;
         flex:1;
@@ -14,6 +14,7 @@
             background: #fff;
             width: 100%;
             margin-top: 15px;
+            min-height: 80vh;
             .noData{
                 text-align: center;
                 padding-top: 30px;
@@ -123,14 +124,14 @@
                             <th>链接</th>
                             <th>排序</th>
                             <th>发布状态</th>
-                            <th>操作</th>
+                            <th v-if="(haspublish < permissions.length) || (hasEditor < permissions.length)||(hasDelete < permissions.length)">操作</th>
                         </tr>
                         <tr v-for="(item,index) in tableData">
                             <td class="flex">
                                 <div class='back' :style="{backgroundImage: 'url(' + item.imageUrl + ')',backgroundRepeat: 'no-repeat',backgroundPosition:'center center'}">
-                                    <img class='selectIcon' v-if='item.isSelect == 0' src="../assets/images/disabled.png">
-                                    <img class='selectIcon' @click="selectAdver(item)" v-if='item.isSelect == 1' src="../assets/images/select.png">
-                                    <img class='selectIcon' @click="selectAdver(item)" v-if='item.isSelect == 2' src="../assets/images/hasSelect.png">
+                                    <img class='selectIcon' v-if='item.isSelect == 0 &&(haspublish < permissions.length)' src="../assets/images/disabled.png">
+                                    <img class='selectIcon' @click="selectAdver(item)" v-if='(item.isSelect == 1)&&(haspublish < permissions.length)' src="../assets/images/select.png">
+                                    <img class='selectIcon' @click="selectAdver(item)" v-if='(item.isSelect == 2)&&(haspublish < permissions.length)' src="../assets/images/hasSelect.png">
                                 </div>
                             </td>
                             <td v-if="item.href">{{item.href}}</td>
@@ -144,26 +145,28 @@
                             <td v-if="item.status == 0 &&item.beginTime == null">已发布</td>
                             <td v-if="item.beginTime">{{timetrans(item.beginTime)}}</td>
                             <td v-if="item.status == 1 && (!item.beginTime)">未发布</td>
-                            <td>
+                            <td v-if="(haspublish < permissions.length) || (hasEditor < permissions.length)||(hasDelete < permissions.length)">
                                 <img class="publishimg imgicon"  v-if="item.state=='已发布'" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/fabugrey.png"/>
                                 <span class=" warmtext" v-if="item.ispublish">发布</span>
-                                <img class="publishimg imgicon cursor" @mouseenter="enterStyleone(item)" @mouseleave='leaveStyleone(item)' @click='itemPublish(item)' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/jinlingyingcaiwangtubiao97.png">
+                                <img class="publishimg imgicon cursor" v-if="(haspublish < permissions.length)"  @mouseenter="enterStyleone(item)" @mouseleave='leaveStyleone(item)' @click='itemPublish(item)' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/jinlingyingcaiwangtubiao97.png">
                                 <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>
-                                <img @click='editorBanner(item.id)' @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
+                                <img @click='editorBanner(item.id,index)' v-if="(hasEditor < permissions.length)" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
                                 <span class="deleteText warmtext" v-if="item.isDelete" style="margin-left: -6px;">删除</span>
-                                <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner(item.id,item.imageUrl)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
+                                <img class="deletimg imgicon cursor" v-if="(hasDelete < permissions.length)" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner(item.id,item.imageUrl)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                             </td>
                         </tr>
                     </table>
-                    <div v-if="!noData" class="noData">暂无数据</div>
+                    <div v-if="!noData && noPermissions" class="noData">暂无数据</div>
+                    <div v-if="!noPermissions && !noData" class="noData">您暂无此权限</div>
+
                     <div class="homebutton">
-                        <span class="sureButton cursor" @click="addBanner">添加横幅</span>
-                        <span class="cancleButton cursor"  @click="allPublish">批量发布</span>
+                        <span class="sureButton cursor"  v-if="(hasAdd < permissions.length)" @click="addBanner">添加横幅</span>
+                        <span class="cancleButton cursor" v-if="(haspublish < permissions.length)" @click="allPublish">批量发布</span>
                     </div>
                 </div>
             </div>
             <Addbanner v-if='showAddbanner' :source="source" @clickbanner="getBanner"></Addbanner>
-            <Editorbanner v-if='showEditorbanner' :id="id" @clickbanner="getBanner"></Editorbanner>
+            <Editorbanner v-if='showEditorbanner' :id="id" :indexnum="index" @clickbanner="getBanner"></Editorbanner>
             <Deletebanner v-if='showDeletebanner' :id="id" :source='deleteSource' :imageUrl="imageUrl" @clickbanner="getBanner"></Deletebanner>
         </div>
     </div>
@@ -180,6 +183,12 @@
         name: "home",
         data() {
             return {
+                haspublish: '',//发布权限
+                hasEditor: '',//编辑权限
+                hasDelete: '',//删除权限
+                hasAdd: '',//添加权限
+                hassort:'',//排序权限
+                index: '',
                 imageUrl:'',
                 source: '',
                 deleteSource: 'banner',
@@ -190,6 +199,7 @@
                 permissions: [],
                 userInfo: '',
                 noData: false,
+                noPermissions: false,
                 id: '',
                 publishObj: {
                     beginTime:'',
@@ -204,6 +214,11 @@
             if(this.userInfo){
                 this.permissions = this.userInfo.permissions;
             }
+            this.haspublish = this.judgeArr(this.permissions,'advert:item:publish');
+            this.hassort = this.judgeArr(this.permissions,'advert:item:sort');
+            this.hasEditor = this.judgeArr(this.permissions,'advert:item:edit');
+            this.hasDelete = this.judgeArr(this.permissions,'advert:item:delete');
+            this.hasAdd = this.judgeArr(this.permissions,'advert:item:add');
             this.getBannerData();//获取首页横幅表个数据
         },
         mounted(){
@@ -211,63 +226,50 @@
         },
         methods:{
             upSort(index){
-                var num = this.judgeArr(this.permissions,'advert:item:sort')
-                if(num<this.permissions.length){
-                    var temp = this.tableData[index-1];
-                    var data = this.tableData;
-                    data[index-1] = this.tableData[index];
-                    data[index] = temp;
-                    for(var i = 0;i<data.length;i++){
-                        var obj = {
-                            id: data[i].id,
-                            sort: i
-                        }
-                        this.changeData.push(obj)
+                var temp = this.tableData[index-1];
+                var data = this.tableData;
+                data[index-1] = this.tableData[index];
+                data[index] = temp;
+                for(var i = 0;i<data.length;i++){
+                    var obj = {
+                        id: data[i].id,
+                        sort: i
                     }
-                    this.itemSort()
-                }else{
-                    this.$message.error('您暂无此权限')
+                    this.changeData.push(obj)
                 }
+                this.itemSort()
 
             },
             downSort(index){
-                var num = this.judgeArr(this.permissions,'advert:item:sort')
-                if(num<this.permissions.length){
-                    var temp = this.tableData[index+1];
-                    var data = this.tableData;
-                    data[index+1] = this.tableData[index];
-                    data[index] = temp;
-                    for(var i = 0;i<data.length;i++){
-                        var obj = {
-                            id: data[i].id,
-                            sort: i
-                        }
-                        this.changeData.push(obj)
+                var temp = this.tableData[index+1];
+                var data = this.tableData;
+                data[index+1] = this.tableData[index];
+                data[index] = temp;
+                for(var i = 0;i<data.length;i++){
+                    var obj = {
+                        id: data[i].id,
+                        sort: i
                     }
-                    this.itemSort()
-                }else{
-                    this.$message.error('您暂无此权限')
+                    this.changeData.push(obj)
                 }
-
+                this.itemSort()
             },
             itemSort(){
                 Service.advert().itemSort(this.changeData).then(response => {
-                    this.changeData = [];
-                    this.getBannerData()
-                }, err => {
+                        if(response.errorCode == 0){
+                            this.changeData = [];
+                            this.getBannerData()
+                        }else{
+                            this.$message.error(response.message)
+                        }
+                    }, err => {
                 });
             },
             itemPublish(item){
-                var num = this.judgeArr(this.permissions,'advert:item:publish')
-                if(num<this.permissions.length){
-                    this.publishObj.ids.push(item.id);
-                    this.publishObj.beginTime = item.beginTime;
-                    this.publishObj.endTime = item.endTime;
-                    this.allPublish();
-                }else{
-                    this.$message.error('您暂无此权限')
-                }
-
+                this.publishObj.ids.push(item.id);
+                this.publishObj.beginTime = item.beginTime;
+                this.publishObj.endTime = item.endTime;
+                this.allPublish();
             },
             allPublish(){
                 if(this.publishObj.ids.length==0){
@@ -275,14 +277,17 @@
                     return;
                 }
                 Service.advert().itemPublish(this.publishObj).then(response => {
-                    this.getBanner();
-                    this.publishObj = {
-                        beginTime:'',
-                        endTime:'',
-                        ids: []
+                    if(response.errorCode == 0){
+                        this.getBanner();
+                        this.publishObj = {
+                            beginTime:'',
+                            endTime:'',
+                            ids: []
+                        }
+                        this.$message.success('发布成功');
+                    }else{
+                        this.$message.error(response.message)
                     }
-                    this.$message.success('发布成功');
-
                 }, err => {
                 });
             },
@@ -342,58 +347,55 @@
                 return num
             },
             addBanner(){
-              var num = this.judgeArr(this.permissions,'advert:item:add')
-               if(num<this.permissions.length){
-                   this.showAddbanner = true;
-               }else{
-                   this.$message.error('您暂无此权限')
-               }
+                this.showAddbanner = true;
             },
-            editorBanner(id){
+            editorBanner(id,index){
+                this.index = index;
                 this.id = id;
-                var num = this.judgeArr(this.permissions,'advert:item:edit')
-                if(num<this.permissions.length){
-                    this.showEditorbanner = true;
-                }else{
-                    this.$message.error('您暂无此权限')
-                }
+                this.showEditorbanner = true;
            },
             deleteBanner(id,imageUrl){
                 this.id = id;
                 this.imageUrl = imageUrl;
-                var num = this.judgeArr(this.permissions,'advert:item:delete')
-                if(num<this.permissions.length){
-                    this.showDeletebanner = true;
-                }else{
-                    this.$message.error('您暂无此权限')
-                }
+                this.showDeletebanner = true;
             },
             getBannerData(){
-                var id = 1;
-                Service.advert().getadverts({
-                },id).then(response => {
-                    if(response.data.length == 0){
-                        this.noData = false;
-                    }else{
-                        this.noData = true;
-                        for(let i in response.data){
-                            response.data[i].ispublish = false;
-                            if(response.data[i].beginTime){
-                                response.data[i].isSelect = '0';
+                var num = this.judgeArr(this.permissions,'advert:view');
+                if(num<this.permissions.length){
+                    this.noPermissions = true;
+                    var id = 1;
+                    Service.advert().getadverts({
+                    },id).then(response => {
+                        if(response.errorCode == 0){
+                            if(response.data.length == 0){
+                                this.noData = false;
                             }else{
-                                response.data[i].isSelect = '1';
+                                this.noData = true;
+                                for(let i in response.data){
+                                    response.data[i].ispublish = false;
+                                    if(response.data[i].beginTime){
+                                        response.data[i].isSelect = '0';
+                                    }else{
+                                        response.data[i].isSelect = '1';
+                                    }
+                                    response.data[i].isEditor = false;
+                                    response.data[i].isDelete = false;
+                                    response.data[i].upicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangyi.png';
+                                    response.data[i].downicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xiayi.png';
+                                }
+                                this.$nextTick(()=>{
+                                    this.tableData = response.data;
+                                })
                             }
-                            response.data[i].isEditor = false;
-                            response.data[i].isDelete = false;
-                            response.data[i].upicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangyi.png';
-                            response.data[i].downicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xiayi.png';
+                        }else{
+                            this.$message.error(response.message)
                         }
-                        this.$nextTick(()=>{
-                            this.tableData = response.data;
-                        })
-                    }
-                }, err => {
-                });
+
+                    }, err => {
+                    });
+                }else{
+                    this.noPermissions = false;
+                }
             },
             getBanner(str){
                 if(str == 'sure'){//添加banner,点击确定按钮刷新列表，关闭弹框
@@ -407,7 +409,6 @@
                     this.showEditorbanner = false;
                     this.showDeletebanner = false;
                 }
-
             }
         },
         components:{

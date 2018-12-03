@@ -106,7 +106,7 @@
                                    {{item.name}}
                                 </td>
                                 <td>{{item.description}}</td>
-                                <td>34</td>
+                                <td>{{item.userCount}}</td>
                                 <td>
                                     <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>
                                     <img @click="addRole(item.id)" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>

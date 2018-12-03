@@ -91,26 +91,31 @@
                 <div class="imgContent">
                     <div class="lianjie">
                         <span class='labletext' >账号 : </span>
-                        {{userInfo.username}}
+                        {{userInfo.phone}}
                     </div>
                     <div class="lianjie" >
                         <span class='labletext'>员工姓名 : </span>
-                        <input type="text" v-model="name" placeholder="请输入员工登陆账号">
+                        <input type="text" v-model="userInfo.name" placeholder="请输入员工登陆账号">
                     </div>
                     <div class="lianjie">
                         <span class='labletext'>邮箱 : </span>
-                        <input type="text" placeholder="请输入员工邮箱">
+                        <input type="text" v-model="userInfo.email" placeholder="请输入员工邮箱">
                     </div>
                     <div class="lianjie juese">
                         <span class='labletext'>角色 :
                         </span>
-                        <span v-for="item in roles">{{item}}&nbsp;&nbsp;</span>
+                        <span v-for="item in roles">{{item.name}}&nbsp;&nbsp;</span>
                     </div>
                     <div class="lianjie juese">
                         <span class='labletext'>权限 :
                         </span>
                         <div class="treeData">
-                            <el-tree :data="data" :props="defaultProps" @node-click="handleNodeClick"></el-tree>
+                            <el-tree ref="roles"
+                                     :data="data"
+                                     show-checkbox
+                                     node-key="id"
+                                     :default-checked-keys="permissions"
+                                     :props="defaultProps"></el-tree>
                         </div>
                     </div>
                 </div>
@@ -125,49 +130,14 @@
 
 <script>
     import axios from 'axios'
-    import Aside from './aside'
-    import Util from '../common/util'
+    import PatternRules from '../common/patternRules'
     import Service from '../common/service'
     export default {
         name: "addstaf",
         data() {
             return {
                 name: '',
-                data: [{
-                    label: '一级 1',
-                    children: [{
-                        label: '二级 1-1',
-                        children: [{
-                            label: '三级 1-1-1'
-                        }]
-                    }]
-                }, {
-                    label: '一级 2',
-                    children: [{
-                        label: '二级 2-1',
-                        children: [{
-                            label: '三级 2-1-1'
-                        }]
-                    }, {
-                        label: '二级 2-2',
-                        children: [{
-                            label: '三级 2-2-1'
-                        }]
-                    }]
-                }, {
-                    label: '一级 3',
-                    children: [{
-                        label: '二级 3-1',
-                        children: [{
-                            label: '三级 3-1-1'
-                        }]
-                    }, {
-                        label: '二级 3-2',
-                        children: [{
-                            label: '三级 3-2-1'
-                        }]
-                    }]
-                }],
+                data: [],
                 defaultProps: {
                     children: 'children',
                     label: 'label'
@@ -180,13 +150,16 @@
                 imgUrl: '',
                 radio: '1',
                 publish: '1',
-                userInfo:''
+                userInfo:'',
+                permissions: []
             };
         },
         created(){
             this.userInfo = JSON.parse(localStorage.getItem('user'));
             this.name = this.userInfo.name;
             this.roles = this.userInfo.roles;
+            this.getInfo();
+            this.getTree()
         },
         watch:{
 
@@ -197,22 +170,73 @@
             var height = document.body.offsetHeight,
                 scrollTop = document.body.scrollTop,
                 top = 0.5*(height-scrollTop-550);
-            console.log(height,scrollTop)
             $('.dialogcontent').css({"left":left,'top': top})
         },
         methods: {
-            handleNodeClick(data) {
-                console.log(data);
+            getPermissions(){
+                Service.staf().chabgePermissions({roleIds:this.checked.join(',')}).then(response => {
+                    if(response.errorCode == 0){
+                        this.permissions = response.data;
+                        this.$refs.roles.setCheckedKeys(this.permissions)
+                    }
+                }, err => {
+                });
             },
-            open8(message) {
-                this.$message({
-                    showClose: true,
-                    message: message,
-                    type: 'error'
+            getTree(){
+                Service.role().resourceTree().then(response => {
+                    if(response.errorCode == 0){
+                        for(var i=0;i<response.data.length;i++){
+                            response.data[i].disabled = true;
+                            for(var j=0;j<response.data[i].children.length;j++){
+                                response.data[i].children[j].disabled = true;
+                            }
+                        }
+                        this.data = response.data;
+                        this.getPermissions();
+                    }
+                }, err => {
+                });
+            },
+            getInfo(){
+                Service.login().accountInfo().then(response => {
+                   if(response.errorCode == 0){
+                        this.userInfo.phone = response.data.phone;
+                       this.userInfo.name = response.data.name;
+                       this.userInfo.email = response.data.email;
+                       this.roles = response.data.roles;
+                       for(var i=0;i<response.data.roles.length;i++){
+                           this.checked.push(response.data.roles[i].id)
+                       }
+                   }
+                }, err => {
                 });
             },
             sureImg(){
-                this.$emit('clickperson', 'closeDialog')
+                if(this.userInfo.name == ''|| this.userInfo.name.length<2 || this.userInfo.name == null){
+                    this.$message.warning('请输入不少于2位的中文员工姓名');
+                    return;
+                }
+                if(!((PatternRules.name).test(this.userInfo.name))){
+                    this.$message.warning('请输入中文姓名');
+                    return
+                }
+                if(!this.userInfo.email){
+                    this.$message.warning('请输入正确邮箱');
+                    return;
+                }
+                if(!(PatternRules.mail.test(this.userInfo.email))){
+                    this.$message.warning('请输入正确邮箱');
+                    return;
+                }
+                Service.login().editorInfo({'name': this.userInfo.name,email: this.userInfo.email}).then(response => {
+                    if(response.errorCode == 0){
+                        this.$emit('clickperson', 'closeDialog')
+                    }else{
+                        this.$message.error(response.message)
+                    }
+                }, err => {
+                });
+
             },
             cancleImg(){
                 this.$emit('clickperson', 'closeDialog')

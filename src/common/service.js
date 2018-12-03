@@ -126,6 +126,18 @@ export default {
                     url: '/sys/admin/account/logout',
                     method: 'post'
                 }, data)
+            },
+            accountInfo(data) {
+                return getResource({
+                    url: '/sys/admin/account/info',
+                    method: 'GET'
+                }, data)
+            },
+            editorInfo(data) {
+                return getResource({
+                    url: '/sys/admin/account/info',
+                    method: 'post'
+                }, data)
             }
         }
 
@@ -380,6 +392,12 @@ export default {
                   method: 'get'
               }, data)
           },
+          chabgePermissions: function (data,key) {
+            return getResource({
+                url: `/sys/admin/role/permissions`,
+                method: 'get'
+            }, data)
+        },
       }
     },
     common() {

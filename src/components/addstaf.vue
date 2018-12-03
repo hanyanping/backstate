@@ -90,7 +90,7 @@
                 <div class="imgContent">
                     <div class="lianjie">
                         <span class='labletext' >账号 : </span>
-                        <input type="tel" maxlength="11" v-model="username" placeholder="请输入员工登陆账号">
+                        <input type="tel" maxlength="11" v-model="phone" placeholder="请输入员工登陆账号">
                     </div>
                     <div class="lianjie" >
                         <span class='labletext'>员工姓名 : </span>
@@ -112,7 +112,14 @@
                         <span class='labletext'>权限 :
                         </span>
                         <div class="treeData">
-                            <el-tree :data="data" :props="defaultProps" @node-click="handleNodeClick"></el-tree>
+                            <el-tree
+                                    ref="roles"
+                                    :data="data"
+                                    show-checkbox
+                                    node-key="id"
+                                    :default-checked-keys="permissions"
+                                    :props="defaultProps">
+                            </el-tree>
                         </div>
                     </div>
                 </div>
@@ -139,45 +146,11 @@
         data() {
             return {
                 title: '',
-                data: [{
-                    label: '一级 1',
-                    children: [{
-                        label: '二级 1-1',
-                        children: [{
-                            label: '三级 1-1-1'
-                        }]
-                    }]
-                }, {
-                    label: '一级 2',
-                    children: [{
-                        label: '二级 2-1',
-                        children: [{
-                            label: '三级 2-1-1'
-                        }]
-                    }, {
-                        label: '二级 2-2',
-                        children: [{
-                            label: '三级 2-2-1'
-                        }]
-                    }]
-                }, {
-                    label: '一级 3',
-                    children: [{
-                        label: '二级 3-1',
-                        children: [{
-                            label: '三级 3-1-1'
-                        }]
-                    }, {
-                        label: '二级 3-2',
-                        children: [{
-                            label: '三级 3-2-1'
-                        }]
-                    }]
-                }],
                 defaultProps: {
                     children: 'children',
                     label: 'label'
                 },
+                data: [],
                 checked: [],
                 selectdata:[],
                 textarea: '',
@@ -186,18 +159,29 @@
                 imgUrl: '',
                 radio: '1',
                 publish: '1',
-                username: '',
+                phone:'',
                 email: '',
                 name: '',
+                username:'',
+                permissions: []
             };
         },
         created(){
+            this.getTree()
             this.getStaf();
             this.getAllrole();
         },
         watch:{
             'name'(){
                 this.name = this.name.substring(0,8)
+            },
+            'checked'(){
+              if(this.checked.length != 0){
+                  this.getPermissions()
+              }else{
+                  this.permissions = [];
+                  this.$refs.roles.setCheckedKeys(this.permissions)
+              }
             }
         },
         mounted(){
@@ -209,6 +193,16 @@
             $('.dialogcontent').css({"left":left,'top': top})
         },
         methods: {
+          getPermissions(){
+             Service.staf().chabgePermissions({roleIds:this.checked.join(',')}).then(response => {
+                 if(response.errorCode == 0){
+                     this.permissions = response.data;
+                     console.log(this.permissions)
+                     this.$refs.roles.setCheckedKeys(this.permissions)
+                 }
+                }, err => {
+                });
+          },
             getAllrole(){
                 Service.staf().getAllRole().then(response => {
                     console.log(response.data)
@@ -218,23 +212,44 @@
                 }, err => {
                 });
             },
+            getTree(){
+                Service.role().resourceTree().then(response => {
+                    if(response.errorCode == 0){
+                        // this.data = response.data;
+                        for(var i=0;i<response.data.length;i++){
+                            response.data[i].disabled = true;
+                            for(var j=0;j<response.data[i].children.length;j++){
+                                response.data[i].children[j].disabled = true;
+                            }
+                        }
+                        console.log(response.data)
+                        this.data = response.data;
+                    }
+                }, err => {
+                });
+            },
             getStaf(){
-                console.log(this.id)
                 if(this.id){
                    this.title = '编辑员工'
                 }else{
                     this.title = '添加员工'
                 }
-
                 if(this.id){
                     Service.staf().getDetailstaf({},this.id).then(response => {
-                        console.log(response.data)
-                        this.username = response.data.username;
-                        this.name = response.data.name;
-                        this.email = response.data.email;
-
-                        // this.treedata = response.data;
-
+                        if(response.errorCode == 0){
+                            this.phone = response.data.phone;
+                            this.username = response.data.username;
+                            this.name = response.data.name;
+                            this.email = response.data.email;
+                            console.log(response.data)
+                            for(var i=0;i<response.data.roles.length;i++){
+                                console.log(response.data.roles[i])
+                                this.checked.push(response.data.roles[i].id)
+                            }
+                            console.log(this.checked)
+                            console.log(response.data.roles)
+                            this.getPermissions();
+                        }
                     }, err => {
                     });
                 }
@@ -251,11 +266,11 @@
             },
             sureImg(){
                 console.log(this.checked);
-                if(!this.username){
+                if(!this.phone){
                     this.$message.warning('请输入员工账号');
                     return;
                 }
-                if(!(PatternRules.mobile.test(this.username))){
+                if(!(PatternRules.mobile.test(this.phone))){
                     this.$message.warning('请输入员工账号');
                     return;
                 }
@@ -286,10 +301,10 @@
                         "email": this.email,
                         "name": this.name,
                         "password": "",
-                        "phone": "",
+                        "phone": this.phone,
                         "roleIds":this.checked,
                         "status": 0,
-                        "username": this.username
+                        "username": this.phone
                     },this.id).then(response => {
                         if(response.errorCode == 0){
                             this.$emit('clickstaf', 'sure')
@@ -302,10 +317,10 @@
                         "email": this.email,
                         "name": this.name,
                         "password": "",
-                        "phone": "",
+                        "phone": this.phone,
                         "roleIds":this.checked,
                         "status": 0,
-                        "username": this.username
+                        "username": this.phone
                     }).then(response => {
                         if(response.errorCode == 0){
                             this.$emit('clickstaf', 'sure')
