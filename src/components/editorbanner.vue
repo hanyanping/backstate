@@ -225,11 +225,15 @@ this.getBanner();
         .getadverts({}, id)
         .then(
           response => {
-            if (response.data.length == 0) {
-            } else {
-              this.photos = response.data;
-              this.getAdvers();
-            }
+              if(response.errorCode == 0 ){
+                  if (response.data.length == 0) {
+                  } else {
+                      this.photos = response.data;
+                      this.getAdvers();
+                  }
+              }else{
+                  this.$message.error(response.message)
+              }
           },
           err => {}
         );
@@ -246,36 +250,34 @@ this.getBanner();
           .getadvert({}, changeid)
           .then(
             response => {
-              this.imageUrl = response.data.imageUrl;
-              for (var i = 0; i < this.photos.length; i++) {
-                if (this.photos[i].imageUrl == this.imageUrl) {
-                  // this.indexnum = i;
-                  // this.$refs.carousel.setActiveItem(i);
+                if(response.errorCode == 0){
+                    this.imageUrl = response.data.imageUrl;
+                    if (!response.data.href) {
+                        this.radio = "1";
+                        this.href = '';
+                    } else {
+                        this.radio = "2";
+                        this.href = response.data.href;
+                    }
+                    if (response.data.beginTime) {
+                        this.publish = "2";
+                        this.startTime = new Date(
+                            this.timetrans(response.data.beginTime)
+                        );
+                    } else {
+                        this.publish = "1";
+                        this.startTime = '';
+                    }
+                    if (response.data.endTime) {
+                        this.stoppublish = "2";
+                        this.endTime = new Date(this.timetrans(response.data.endTime));
+                    } else {
+                        this.stoppublish = "1";
+                        this.endTime = '';
+                    }
+                }else{
+                    this.$message.error(response.message)
                 }
-              }
-              if (!response.data.href) {
-                this.radio = "1";
-                  this.href = '';
-              } else {
-                this.radio = "2";
-                this.href = response.data.href;
-              }
-              if (response.data.beginTime) {
-                this.publish = "2";
-                this.startTime = new Date(
-                  this.timetrans(response.data.beginTime)
-                );
-              } else {
-                this.publish = "1";
-                  this.startTime = '';
-              }
-              if (response.data.endTime) {
-                this.stoppublish = "2";
-                this.endTime = new Date(this.timetrans(response.data.endTime));
-              } else {
-                this.stoppublish = "1";
-                  this.endTime = '';
-              }
             },
             err => {}
           );
@@ -437,7 +439,11 @@ this.getBanner();
         )
         .then(
           response => {
-            this.$emit("clickbanner", "sure");
+              if(response.errorCode == 0){
+                  this.$emit("clickbanner", "sure");
+              }else{
+                  this.$message.error(response.message)
+              }
           },
           err => {}
         );

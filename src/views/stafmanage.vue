@@ -6,6 +6,7 @@
             background: #f9f9f9;
             flex:1;
             padding: 15px 36px;
+            min-height: 80vh;
             .hometitle{
                 color: #0d0d0d;
                 font-size: 24px;
@@ -99,7 +100,7 @@
             <div class="contanter">
                 <div class="hometitle">员工管理</div>
                 <div class="bannerTable">
-                    <div class="tableBox">
+                    <div v-if='noData' class="tableBox">
                         <table class="table">
                             <tr>
                                 <th>账号</th>
@@ -108,7 +109,7 @@
                                 <th>添加人</th>
                                 <th>赋予权限</th>
                                 <th>添加时间</th>
-                                <th>操作</th>
+                                <th v-if="(hasEditor < permissions.length)||(hasDelete < permissions.length)">操作</th>
                             </tr>
                             <tr v-for="(item,index) in tableData">
                                 <td>
@@ -121,14 +122,13 @@
                                 <td v-if="!item.createBy">暂无</td>
                                 <td ><span v-for="ite in item.roles">{{ite.name}}</span></td>
                                 <td>{{timetrans(item.createDate)}}</td>
-                                <td>
+                                <td v-if="(hasEditor < permissions.length)||(hasDelete < permissions.length)">
                                     <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>
-                                    <img @click="addStaf(item.id)" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
+                                    <img @click="addStaf(item.id)" v-if="(hasEditor < permissions.length)" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
                                     <span class="deleteText warmtext" v-if="item.isDelete" >删除</span>
-                                    <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteStaf(item.id)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
+                                    <img class="deletimg imgicon cursor" v-if="(hasDelete < permissions.length)"  @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteStaf(item.id)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                                 </td>
                             </tr>
-
                         </table>
                         <div class="block">
                             <el-pagination
@@ -142,7 +142,9 @@
                             </el-pagination>
                         </div>
                     </div>
-                    <div class="homebutton">
+                    <div v-if="!noData && noPermissions" class="noData">暂无数据</div>
+                    <div v-if="!noPermissions && !noData" class="noData">您暂无此权限</div>
+                    <div class="homebutton" v-if="(hasAdd < permissions.length)">
                         <span class="sureButton cursor" @click="addStaf('')">添加员工</span>
                     </div>
                 </div>
@@ -161,6 +163,11 @@
         name: "home",
         data() {
             return {
+                hasEditor: '',//编辑权限
+                hasDelete: '',//删除权限
+                hasAdd: '',//添加权限
+                noData: false,
+                noPermissions: false,
                 id: '',
                 page: 1,
                 size: 10,
@@ -176,6 +183,9 @@
             if(this.userInfo){
                 this.permissions = this.userInfo.permissions;
             }
+            this.hasEditor = this.judgeArr(this.permissions,'user:edit');
+            this.hasDelete = this.judgeArr(this.permissions,'user:delete');
+            this.hasAdd = this.judgeArr(this.permissions,'user:add');
             this.getStafdata();
         },
         methods:{
@@ -206,50 +216,38 @@
                 return num
             },
             addStaf(id){
-                if(id){
-                    var num = this.judgeArr(this.permissions,'user:edit')
-                }else{
-                    var num = this.judgeArr(this.permissions,'user:add')
-                }
-                if(num<this.permissions.length){
-                    this.id = id;
-                    console.log(this.id)
-                    this.showAddstaf = true;
-                }else{
-                    this.$message.error('您暂无此权限')
-                }
-
+                this.id = id;
+                this.showAddstaf = true;
             },
             handleSizeChange(val) {
-                console.log(`每页 ${val} 条`);
+                this.size = val;
+                this.getStafdata();
             },
             handleCurrentChange(val) {
-                console.log(`当前页: ${val}`);
+                this.page = val;
+                this.getStafdata();
             },
             deleteStaf(id){
-                var num = this.judgeArr(this.permissions,'user:delete')
-                if(num<this.permissions.length){
-                    this.$confirm('是否删除?', '', {
-                        confirmButtonText: '确定',
-                        cancelButtonText: '取消',
-                        type: 'warning'
-                    }).then(() => {
-                        Service.staf().deleteStaf({},id).then(response => {
-                            if(response.errorCode == 0){
-                                this.getStafdata();
-                                this.$message({
-                                    type: 'success',
-                                    message: '删除成功!'
-                                });
-                            }
-                        }, err => {
-                        });
-
-                    }).catch(() => {
+                this.$confirm('是否删除?', '', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    Service.staf().deleteStaf({},id).then(response => {
+                        if(response.errorCode == 0){
+                            this.getStafdata();
+                            this.$message({
+                                type: 'success',
+                                message: '删除成功!'
+                            });
+                        }else{
+                            this.$message.error(response.message)
+                        }
+                    }, err => {
                     });
-                }else{
-                    this.$message.error('您暂无此权限')
-                }
+
+                }).catch(() => {
+                });
             },
             timetrans(timestamp) {
                 var getSeconds = '', getMinutes = '', getHours = '';
@@ -261,30 +259,37 @@
                 return newTime
             },
             getStafdata(){
-                Service.staf().getstafs({page:this.page,size: this.size}).then(response => {
-                    if(response.errorCode == 0){
-                        if(response.data.records.length!=0){
-                            this.noData = true;
-                            for(let i in response.data.records){
-                                response.data.records[i].ispublish = false;
-                                response.data.records[i].isEditor = false;
-                                response.data.records[i].isDelete = false;
-                                response.data.records[i].upicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangyi.png';
-                                response.data.records[i].downicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xiayi.png';
+                var num = this.judgeArr(this.permissions,'user:view');
+                if(num<this.permissions.length) {
+                    this.noPermissions = true;
+                    Service.staf().getstafs({page: this.page, size: this.size}).then(response => {
+                        if (response.errorCode == 0) {
+                            if (response.data.records.length != 0) {
+                                this.noData = true;
+                                for (let i in response.data.records) {
+                                    response.data.records[i].ispublish = false;
+                                    response.data.records[i].isEditor = false;
+                                    response.data.records[i].isDelete = false;
+                                    response.data.records[i].upicon = 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangyi.png';
+                                    response.data.records[i].downicon = 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xiayi.png';
+                                }
+                                this.total = response.data.total;
+                                this.$nextTick(() => {
+                                    this.tableData = response.data.records;
+                                })
+                            } else {
+                                this.noData = false;
                             }
-                            this.total = response.data.total;
-                            this.$nextTick(()=>{
-                                this.tableData = response.data.records;
-                            })
                         }else{
-                            this.noData = false;
+                            this.$message.error(response.message)
                         }
-                    }
-                }, err => {
-                });
+                    }, err => {
+                    });
+                }else{
+                    this.noPermissions = false;
+                }
             },
             getStaf(str){
-                console.log(str)
                 if(str == 'sure'){
                     this.showAddstaf = false;
                     this.getStafdata();

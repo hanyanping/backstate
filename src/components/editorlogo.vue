@@ -167,7 +167,12 @@
             },
             getPartner(){
                 Service.partner().getPartner({},this.id).then(response => {
-                   this.imageUrl = response.data.imageUrl;
+                    if(response.errorCode == 0){
+                        this.imageUrl = response.data.imageUrl;
+                    }else{
+                        this.$message.error(response.message)
+                    }
+
                 }, err => {
                 });
             },
@@ -187,7 +192,11 @@
                     "name": "",
                     "sort": ''
                 },this.id).then(response => {
-                    this.$emit('clickbanner', 'sure')
+                    if(response.errorCode == 0){
+                        this.$emit('clickbanner', 'sure')
+                    }else{
+                        this.$message.error(response.message)
+                    }
                 }, err => {
                 });
 

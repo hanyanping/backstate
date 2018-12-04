@@ -150,9 +150,9 @@
                                 <span class=" warmtext" v-if="item.ispublish">发布</span>
                                 <img class="publishimg imgicon cursor" v-if="(haspublish < permissions.length)"  @mouseenter="enterStyleone(item)" @mouseleave='leaveStyleone(item)' @click='itemPublish(item)' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/jinlingyingcaiwangtubiao97.png">
                                 <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>
-                                <img @click='editorBanner(item.id,index)' v-if="(hasEditor < permissions.length)" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
+                                <img @click='editorBannerfun(item.id,index)' v-if="(hasEditor < permissions.length)" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
                                 <span class="deleteText warmtext" v-if="item.isDelete" style="margin-left: -6px;">删除</span>
-                                <img class="deletimg imgicon cursor" v-if="(hasDelete < permissions.length)" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner(item.id,item.imageUrl)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
+                                <img class="deletimg imgicon cursor" v-if="(hasDelete < permissions.length)" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBannerfun(item.id,item.imageUrl)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                             </td>
                         </tr>
                     </table>
@@ -160,7 +160,7 @@
                     <div v-if="!noPermissions && !noData" class="noData">您暂无此权限</div>
 
                     <div class="homebutton">
-                        <span class="sureButton cursor"  v-if="(hasAdd < permissions.length)" @click="addBanner">添加横幅</span>
+                        <span class="sureButton cursor"  v-if="(hasAdd < permissions.length)" @click="addBannerfun">添加横幅</span>
                         <span class="cancleButton cursor" v-if="(haspublish < permissions.length)" @click="allPublish">批量发布</span>
                     </div>
                 </div>
@@ -346,15 +346,15 @@
                 }
                 return num
             },
-            addBanner(){
+            addBannerfun(){
                 this.showAddbanner = true;
             },
-            editorBanner(id,index){
+            editorBannerfun(id,index){
                 this.index = index;
                 this.id = id;
                 this.showEditorbanner = true;
            },
-            deleteBanner(id,imageUrl){
+            deleteBannerfun(id,imageUrl){
                 this.id = id;
                 this.imageUrl = imageUrl;
                 this.showDeletebanner = true;

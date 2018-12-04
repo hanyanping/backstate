@@ -77,15 +77,24 @@
             }
             if(this.source == 'news'){
                 Service.news().getNewsDetail({},this.setid).then(response => {
-                    if(response.data != null){
-                        this.dealDetail(response.data)
+                    if(response.errorCode == 0){
+                        if(response.data != null){
+                            this.dealDetail(response.data)
+                        }
+                    }else{
+                        this.$message.error(response.message)
                     }
+
                 }, err => {
                 });
             }else{
                 Service.sys().getarticleDetail({},this.setid).then(response => {
-                    if(response.data != null){
-                        this.dealDetail(response.data)
+                    if(response.errorCode == 0){
+                        if(response.data != null){
+                            this.dealDetail(response.data)
+                        }
+                    }else{
+                        this.$message.error(response.message)
                     }
                 }, err => {
                 });

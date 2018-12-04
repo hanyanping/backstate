@@ -144,15 +144,18 @@
             this.getDetail()
         },
         methods: {
-
             getDetail(){
                 if(this.source == 'banner'){
                     Service.advert().getadvert({
                     },this.id).then(response => {
-                        if(response.data.href){
-                            this.href = response.data.href
+                        if(response.errorCode == 0){
+                            if(response.data.href){
+                                this.href = response.data.href;
+                            }else{
+                                this.href = '暂无'
+                            }
                         }else{
-                            this.href = '暂无'
+                            this.$message.error(response.message)
                         }
                     }, err => {
                     });
@@ -178,21 +181,33 @@
                 if(this.source == 'news'){
                     Service.news().deleteNews({
                     },this.id).then(response => {
-                        this.$emit('clickbanner', 'sure')
+                        if(response.errorCode == 0){
+                            this.$emit('clickbanner', 'sure')
+                        }else{
+                            this.$message.error(response.message)
+                        }
                     }, err => {
                     });
                 }
                 if(this.source == 'banner'){
                     Service.advert().deleteadvert({
                     },this.id).then(response => {
-                        this.$emit('clickbanner', 'sure')
+                        if(response.errorCode == 0){
+                            this.$emit('clickbanner', 'sure')
+                        }else{
+                            this.$message.error(response.message)
+                        }
                     }, err => {
                     });
                 }
                 if(this.source == 'cooperative'){
                     Service.partner().deletePartner({
                     },this.id).then(response => {
-                        this.$emit('clickbanner', 'sure')
+                        if(response.errorCode == 0){
+                            this.$emit('clickbanner', 'sure')
+                        }else{
+                            this.$message.error(response.message)
+                        }
                     }, err => {
                     });
                 }

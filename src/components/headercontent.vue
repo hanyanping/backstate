@@ -72,12 +72,16 @@
             loginOut(){
                 Service.login().loginOut({
                 }).then(response => {
-                    localStorage.removeItem('user');
-                    localStorage.removeItem('param');
-                    localStorage.removeItem('contentnews');
-                    localStorage.removeItem('type');
-                    localStorage.removeItem('access_token');
-                    this.$router.push({name: 'login'})
+                    if(response.errorCode == 0){
+                        localStorage.removeItem('user');
+                        localStorage.removeItem('param');
+                        localStorage.removeItem('contentnews');
+                        localStorage.removeItem('type');
+                        localStorage.removeItem('access_token');
+                        this.$router.push({name: 'login'})
+                    }else{
+                        this.$message.error(response.message)
+                    }
                 }, err => {
                 });
             },

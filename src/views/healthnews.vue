@@ -15,7 +15,7 @@
                     background: #fff;
                     width: 100%;
                     margin-top: 15px;
-                    min-height: 80vh;
+                    min-height: 70vh;
                     .searchbox{
                         display: flex;
                         padding: 10px 30px;
@@ -421,6 +421,8 @@
                     if(response.errorCode==0){
                         this.$message.success('发布成功');
                         this.searchAlready();
+                    }else{
+                        this.$message.error(response.message)
                     }
                 }, err => {
                 });
@@ -430,6 +432,8 @@
                     if(response.errorCode==0){
                         this.$message.success('移除成功');
                         this.searchAlready();
+                    }else{
+                        this.$message.error(response.message)
                     }
                 }, err => {
                 });
@@ -439,6 +443,8 @@
                     if(response.errorCode==0){
                         this.$message.success('删除成功');
                         this.searchAlready();
+                    }else{
+                        this.$message.error(response.message)
                     }
                 }, err => {
                 });
@@ -496,6 +502,8 @@
                                 this.tableData = [];
                                 this.noData = false;
                             }
+                        }else{
+                            this.$message.error(response.message)
                         }
                     }, err => {
                     });

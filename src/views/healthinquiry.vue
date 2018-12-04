@@ -7,6 +7,7 @@
                 background: #f9f9f9;
                 flex:1;
                 padding: 15px 36px;
+                min-height: 80vh;
                 .hometitle{
                     color: #0d0d0d;
                     font-size: 24px;
@@ -15,7 +16,7 @@
                     background: #fff;
                     width: 100%;
                     margin-top: 15px;
-                    min-height: 80vh;
+                    min-height: 70vh;
                     .searchbox{
                         display: flex;
                         padding: 10px 30px;
@@ -422,6 +423,8 @@
                     if(response.errorCode==0){
                         this.$message.success('发布成功');
                         this.searchAlready();
+                    }else{
+                        this.$message.error(response.message)
                     }
                 }, err => {
                 });
@@ -431,6 +434,8 @@
                     if(response.errorCode==0){
                         this.$message.success('移除成功');
                         this.searchAlready();
+                    }else{
+                        this.$message.error(response.message)
                     }
                 }, err => {
                 });
@@ -440,6 +445,8 @@
                     if(response.errorCode==0){
                         this.$message.success('删除成功');
                         this.searchAlready();
+                    }else{
+                        this.$message.error(response.message)
                     }
                 }, err => {
                 });
@@ -497,6 +504,8 @@
                                 this.tableData = [];
                                 this.noData = false;
                             }
+                        }else{
+                            this.$message.error(response.message)
                         }
                     }, err => {
                     });

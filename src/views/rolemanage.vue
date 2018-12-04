@@ -6,6 +6,7 @@
             background: #f9f9f9;
             flex:1;
             padding: 15px 36px;
+            min-height: 80vh;
             .hometitle{
                 color: #0d0d0d;
                 font-size: 24px;
@@ -99,7 +100,7 @@
                                 <th>员工角色</th>
                                 <th>描述</th>
                                 <th>数量</th>
-                                <th>操作</th>
+                                <th v-if="(hasEditor < permissions.length)||(hasDelete < permissions.length)">操作</th>
                             </tr>
                             <tr v-for="(item,index) in tableData">
                                 <td>
@@ -107,11 +108,11 @@
                                 </td>
                                 <td>{{item.description}}</td>
                                 <td>{{item.userCount}}</td>
-                                <td>
+                                <td v-if="(hasEditor < permissions.length)||(hasDelete < permissions.length)">
                                     <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>
-                                    <img @click="addRole(item.id)" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
+                                    <img @click="addRole(item.id)" v-if="(hasEditor < permissions.length)" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
                                     <span class="deleteText warmtext" v-if="item.isDelete" >删除</span>
-                                    <img class="deletimg imgicon cursor" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner(item.id)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
+                                    <img class="deletimg imgicon cursor" v-if="(hasDelete < permissions.length)"  @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deleteBanner(item.id)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                                 </td>
                             </tr>
 
@@ -128,8 +129,9 @@
                             </el-pagination>
                         </div>
                     </div>
-                    <div v-if="!noData" class="noData">暂无数据</div>
-                    <div class="homebutton">
+                    <div v-if="!noData && noPermissions" class="noData">暂无数据</div>
+                    <div v-if="!noPermissions && !noData" class="noData">您暂无此权限</div>
+                    <div class="homebutton" v-if="(hasAdd < permissions.length)">
                         <span class="sureButton cursor" @click="addRole('')">添加角色</span>
                     </div>
                 </div>
@@ -156,6 +158,10 @@
                 showEditornews: false,
                 tableData: [
                 ],
+                hasEditor: '',//编辑权限
+                hasDelete: '',//删除权限
+                hasAdd: '',//添加权限
+                noPermissions: false,
                 noData: false,
                 userInfo:'',
                 permissions: [],
@@ -166,6 +172,9 @@
             if(this.userInfo){
                 this.permissions = this.userInfo.permissions;
             }
+            this.hasEditor = this.judgeArr(this.permissions,'role:edit');
+            this.hasDelete = this.judgeArr(this.permissions,'role:delete');
+            this.hasAdd = this.judgeArr(this.permissions,'role:add');
             this.getRoleData();
         },
         methods:{
@@ -201,27 +210,16 @@
                 this.showAddrole = true;
             },
             handleSizeChange(val) {
-                console.log(`每页 ${val} 条`);
                 this.size = val;
                 this.getRoleData();
             },
             handleCurrentChange(val) {
-                console.log(`当前页: ${val}`);
                 this.page = val;
                 this.getRoleData();
             },
             editorBanner(id){
-                if(id){
-                    var num = this.judgeArr(this.permissions,'role:edit')
-                }else{
-                    var num = this.judgeArr(this.permissions,'role:add')
-                }
-                if(num<this.permissions.length){
-                    this.id = id;
-                    this.showAddrole = true;
-                }else{
-                    this.$message.error('您暂无此权限')
-                }
+                this.id = id;
+                this.showAddrole = true;
             },
             judgeArr(arr,value){
                 var num = 0;
@@ -234,32 +232,31 @@
                 return num
             },
             deleteBanner(id){
-                var num = this.judgeArr(this.permissions,'role:delete')
-                if(num<this.permissions.length){
-                    this.$confirm('是否删除此权限?', '', {
-                        confirmButtonText: '确定',
-                        cancelButtonText: '取消',
-                        type: 'warning'
-                    }).then(() => {
-                        Service.role().deleteRole({},id).then(response => {
-                            if(response.errorCode == 0){
-                                this.getRoleData();
-                                this.$message({
-                                    type: 'success',
-                                    message: '删除成功!'
-                                });
-                            }
-                        }, err => {
-                        });
-
-                    }).catch(() => {
+                this.$confirm('是否删除此权限?', '', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    Service.role().deleteRole({},id).then(response => {
+                        if(response.errorCode == 0){
+                            this.getRoleData();
+                            this.$message({
+                                type: 'success',
+                                message: '删除成功!'
+                            });
+                        }else{
+                            this.$message.error(response.message)
+                        }
+                    }, err => {
                     });
-                }else{
-                    this.$message.error('您暂无此权限')
-                }
 
+                }).catch(() => {
+                });
             },
             getRoleData(){
+                var num = this.judgeArr(this.permissions,'role:view');
+                if(num<this.permissions.length) {
+                    this.noPermissions = true;
                 Service.role().getRoles({page:this.page,size: this.size}).then(response => {
                     if(response.errorCode == 0){
                         if(response.data.records.length!=0){
@@ -278,9 +275,14 @@
                         }else{
                             this.noData = false;
                         }
+                    }else{
+                        this.$message.error(response.message)
                     }
                 }, err => {
-                });
+                })
+                }else{
+                    this.noPermissions = false;
+                };
             },
             getRole(str){
                 if(str == 'sure'){

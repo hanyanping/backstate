@@ -6,6 +6,7 @@
             background: #f9f9f9;
             flex:1;
             padding: 15px 36px;
+            min-height: 80vh;
             .hometitle{
                 color: #0d0d0d;
                 font-size: 24px;
@@ -160,7 +161,6 @@
 <script>
     import Aside from '../components/aside'
     import Headercontent from '../components/headercontent'
-    import Addbanner from '../components/addbanner'
     import  Deletebanner from '../components/deletebanner'
     import Service from '../common/service'
     export default {
@@ -176,7 +176,6 @@
                 id: '',
                 source: 'news',
                 showDeletebanner: false,
-                showAddbanner: false,
                 showEditornews: false,
                 tableData: [],
                 page: 1,
@@ -230,9 +229,7 @@
                 this.page = val;
                 this.getNewData();
             },
-            addBanner(){
-                this.showEditornews = true;
-            },
+
             judgeArr(arr,value){
                 var num = 0;
                 for(var i=0;i<arr.length;i++){
@@ -257,22 +254,29 @@
                 if(num<this.permissions.length){
                     this.noPermissions = true;
                     Service.news().getNews({page:this.page,size: this.size}).then(response => {
-                        if(response.data.records.length!=0){
-                            this.noData = true;
-                            for(let i in response.data.records){
-                                response.data.records[i].ispublish = false;
-                                response.data.records[i].isEditor = false;
-                                response.data.records[i].isDelete = false;
-                                response.data.records[i].upicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangyi.png';
-                                response.data.records[i].downicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xiayi.png';
+                        console.log(response.data)
+                        if(response.errorCode == 0){
+                            if(response.data.records.length!=0){
+                                this.noData = true;
+                                for(let i in response.data.records){
+                                    response.data.records[i].ispublish = false;
+                                    response.data.records[i].isEditor = false;
+                                    response.data.records[i].isDelete = false;
+                                    response.data.records[i].upicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/shangyi.png';
+                                    response.data.records[i].downicon= 'https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/xiayi.png';
+                                }
+                                this.total = response.data.total;
+                                this.$nextTick(()=>{
+                                    this.tableData =  response.data.records;
+                                })
+                                console.log(this.tableData)
+                            }else{
+                                this.noData = false;
                             }
-                            this.total = response.data.total;
-                            this.$nextTick(()=>{
-                                this.tableData =  response.data.records;
-                            })
                         }else{
-                            this.noData = false;
+                            this.$message.error(response.message)
                         }
+
                     }, err => {
                     });
                 }else{
@@ -282,13 +286,11 @@
             },
             getNews(str){
                 if(str == 'sure'){
-                    this.showAddbanner = false;
                     this.showEditornews = false;
                     this.showDeletebanner = false;
                     this.getNewData()
                 }
                 if(str == 'cancle'){
-                    this.showAddbanner = false;
                     this.showEditornews = false;
                     this.showDeletebanner = false;
                 }
@@ -297,7 +299,6 @@
         components:{
             Aside,
             Headercontent,
-            Addbanner,
             Deletebanner
         },
     }

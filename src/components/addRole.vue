@@ -156,7 +156,7 @@
         },
         watch:{
             'name'(){
-                this.name = this.name.substring(0,8)
+                this.name = this.name.substring(0,8);
             },
             'description'(){
                 this.description = this.description.substring(0,50)
@@ -172,10 +172,7 @@
         },
         methods: {
             changeName(){
-                if(!((PatternRules.name).test(this.name))){
-                    this.$message.warning('请输入中文');
-                    return
-                }
+
             },
             changeDescription(){
                 this.description = this.description.substring(0,50)
@@ -197,10 +194,13 @@
             },
             getDetail(){
                 Service.role().getDetailrole({},this.id).then(response => {
-                    console.log(response.data)
-                    this.permissions = response.data.permissions;
-                    this.name = response.data.name;
-                    this.description = response.data.description;
+                    if(response.errorCode == 0){
+                        this.permissions = response.data.permissions;
+                        this.name = response.data.name;
+                        this.description = response.data.description;
+                    }else{
+                        this.$message.error(response.message)
+                    }
                 }, err => {
                 });
             },
@@ -215,6 +215,10 @@
                 });
             },
             sureImg(){
+                if(!((PatternRules.name).test(this.name))){
+                    this.$message.warning('请输入中文');
+                    return
+                }
                 if(this.name == ''|| this.name.length<2 || this.name == null){
                     this.$message.warning('请输入不少于2位的中文角色名称');
                     return;
@@ -237,7 +241,11 @@
                         "sort": 0,
                         "status": 0
                     },this.id).then(response => {
-                        this.$emit('clickbanner', 'sure')
+                        if(response.errorCode == 0){
+                            this.$emit('clickbanner', 'sure')
+                        }else{
+                            this.$message.error(response.message)
+                        }
                     }, err => {
                     });
                 }else{
@@ -248,7 +256,11 @@
                         "sort": 0,
                         "status": 0
                     }).then(response => {
-                        this.$emit('clickbanner', 'sure')
+                        if(response.errorCode == 0){
+                            this.$emit('clickbanner', 'sure')
+                        }else{
+                            this.$message.error(response.message)
+                        }
                     }, err => {
                     });
                 }

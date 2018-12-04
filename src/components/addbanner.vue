@@ -297,13 +297,16 @@
                     obj.title = '';
                     objArr.push(obj)
                 }
-                console.log(objArr)
                 if(objArr.length!=0){
                     if(this.source != 'cooperative'){
                         Service.advert().addadvertPhone(objArr).then(response => {
-                            this.selectImg = [];
-                            objArr = [];
-                            this.$emit('clickbanner', 'sure')
+                            if(response.errorCode == 0){
+                                this.selectImg = [];
+                                objArr = [];
+                                this.$emit('clickbanner', 'sure')
+                            }else{
+                                this.$message.error(response.message)
+                            }
                         }, err => {
                         });
                     }
@@ -328,10 +331,13 @@
                 if(objArr.length!=0){
                     if(this.source == 'cooperative'){
                         Service.partner().addPartner(objArr).then(response => {
-                            this.selectImg = [];
-                            objArr = [];
-                            console.log(response)
-                            this.$emit('clickbanner', 'sure')
+                            if(response.errorCode == 0){
+                                this.selectImg = [];
+                                objArr = [];
+                                this.$emit('clickbanner', 'sure')
+                            }else{
+                                this.$message.error(response.message)
+                            }
                         }, err => {
                         });
                     }

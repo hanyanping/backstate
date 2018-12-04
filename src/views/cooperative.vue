@@ -7,6 +7,7 @@
                 background: #f9f9f9;
                 flex:1;
                 padding: 15px 36px;
+
                 .hometitle{
                     color: #0d0d0d;
                     font-size: 24px;
@@ -15,6 +16,7 @@
                     background: #fff;
                     width: 100%;
                     margin-top: 15px;
+                    min-height: 70vh;
                     .noData{
                         text-align: center;
                         padding-top: 30px;
@@ -118,7 +120,7 @@
                             </td>
                             <td v-if="(hasEditor<permissions.length) || (hasDelete<permissions.length)">
                                 <span class="editorText warmtext" v-if="item.isEditor" >编辑</span>
-                                <img @click="editorLogo(item.id)" v-if="(hasEditor<permissions.length)" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
+                                <img @click="editorLogofun(item.id)" v-if="(hasEditor<permissions.length)" @mouseenter="enterStyletwo(item)" @mouseleave='leaveStyletwo(item)' class='editorimg imgicon cursor' src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/bianji.png"/>
                                 <span class="deleteText warmtext" v-if="item.isDelete">删除</span>
                                 <img class="deletimg imgicon cursor" v-if="(hasDelete<permissions.length)" @mouseenter="enterStylethree(item)" @mouseleave='leaveStylethree(item)' @click="deletePartner(item.id,item.imageUrl)" src="https://ifxj-upload.oss-cn-shenzhen.aliyuncs.com/ifxj_web_pc/lajitong-2.png"/>
                             </td>
@@ -210,8 +212,12 @@
             },
             itemSort(){
                 Service.partner().partnerSort(this.changeData).then(response => {
-                    this.changeData = [];
-                    this.getCooperaData()
+                    if(response.errorCode == 0){
+                        this.changeData = [];
+                        this.getCooperaData()
+                    }else{
+                        this.$message.error(response.message)
+                    }
                 }, err => {
                 });
             },
@@ -234,7 +240,7 @@
             addLogo(){
                 this.showAddbanner = true;
             },
-            editorLogo(id){
+            editorLogofun(id){
                 this.id = id;
                 this.showEditorlogo = true;
             },
@@ -274,6 +280,8 @@
                                 this.tableData = [];
                                 this.noData = false;
                             }
+                        }else{
+                            this.$message.error(response.message)
                         }
                     }, err => {
                     });

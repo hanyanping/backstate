@@ -199,31 +199,34 @@
                      this.permissions = response.data;
                      console.log(this.permissions)
                      this.$refs.roles.setCheckedKeys(this.permissions)
+                 }else{
+                     this.$message.error(response.message)
                  }
                 }, err => {
                 });
           },
             getAllrole(){
                 Service.staf().getAllRole().then(response => {
-                    console.log(response.data)
-                    this.selectdata = response.data;
-                    // this.treedata = response.data;
-
+                    if(response.errorCode == 0){
+                        this.selectdata = response.data;
+                    }else{
+                        this.$message.error(response.message)
+                    }
                 }, err => {
                 });
             },
             getTree(){
                 Service.role().resourceTree().then(response => {
                     if(response.errorCode == 0){
-                        // this.data = response.data;
                         for(var i=0;i<response.data.length;i++){
                             response.data[i].disabled = true;
                             for(var j=0;j<response.data[i].children.length;j++){
                                 response.data[i].children[j].disabled = true;
                             }
                         }
-                        console.log(response.data)
                         this.data = response.data;
+                    }else{
+                        this.$message.error(response.message)
                     }
                 }, err => {
                 });
@@ -241,21 +244,18 @@
                             this.username = response.data.username;
                             this.name = response.data.name;
                             this.email = response.data.email;
-                            console.log(response.data)
                             for(var i=0;i<response.data.roles.length;i++){
-                                console.log(response.data.roles[i])
                                 this.checked.push(response.data.roles[i].id)
                             }
-                            console.log(this.checked)
-                            console.log(response.data.roles)
                             this.getPermissions();
+                        }else{
+                            this.$message.error(response.message)
                         }
                     }, err => {
                     });
                 }
             },
             handleNodeClick(data) {
-                console.log(data);
             },
             open8(message) {
                 this.$message({
@@ -308,6 +308,8 @@
                     },this.id).then(response => {
                         if(response.errorCode == 0){
                             this.$emit('clickstaf', 'sure')
+                        }else{
+                            this.$message.error(response.message)
                         }
                     }, err => {
                     });
@@ -324,6 +326,8 @@
                     }).then(response => {
                         if(response.errorCode == 0){
                             this.$emit('clickstaf', 'sure')
+                        }else{
+                            this.$message.error(response.message)
                         }
                     }, err => {
                     });
